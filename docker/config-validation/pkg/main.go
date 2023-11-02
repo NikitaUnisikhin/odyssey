@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -22,7 +23,7 @@ type testCase struct {
 	errorMsg     string
 }
 
-func changeConfig(prefix string, stringToReplace string) error {
+func changeConfig(pattern string, stringToReplace string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -33,7 +34,7 @@ func changeConfig(prefix string, stringToReplace string) error {
 	var lines []string
 	for scanner.Scan() {
 		text := scanner.Text()
-		if strings.HasPrefix(scanner.Text(), prefix) {
+		if matched, _ := regexp.Match(pattern, []byte(text)); matched {
 			text = stringToReplace
 		}
 
@@ -56,7 +57,7 @@ func check(tests []testCase, field string) error {
 	ctx := context.TODO()
 
 	for _, test := range tests {
-		err := changeConfig(field, field+" "+test.input)
+		err := changeConfig(field+`*`, field+" "+test.input)
 
 		if err != nil {
 			return err
@@ -146,6 +147,13 @@ func checkUnixSocketMode() error {
 	}
 
 	return check(tests, "unix_socket_mode")
+}
+
+func checkListen() error {
+	const currentFieldIsNotPass = "config with listen is not pass"
+	const noCurrentFieldIsPass = "config with missing listen is pass"
+	const badField = "no listen servers defined"
+	return nil
 }
 
 func main() {
