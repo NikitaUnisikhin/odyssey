@@ -120,7 +120,11 @@ func checkResolvers() error {
 func main() {
 	if err := checkWorkers(); err != nil {
 		fmt.Println("error:", err)
-	} else if err := checkResolvers(); err != nil {
+	} else {
+		fmt.Println("checkWorkers: Ok")
+	}
+
+	if err := checkResolvers(); err != nil {
 		fmt.Println("error:", err)
 	} else {
 		fmt.Println("checkWorkers: Ok")
