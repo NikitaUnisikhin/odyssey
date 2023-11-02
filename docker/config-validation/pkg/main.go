@@ -129,7 +129,7 @@ func checkLogFormat() error {
 	const badField = "log is not defined"
 
 	var tests = []testCase{
-		{"\"%p %t %l [%i %s] (%c) %m\n\"", configIsValid, currentFieldIsNotPass},
+		{"\"%p %t %l [%i %s] (%c) %m\"", configIsValid, currentFieldIsNotPass},
 		{"", badField, noCurrentFieldIsPass},
 	}
 
