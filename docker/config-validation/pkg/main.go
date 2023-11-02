@@ -67,7 +67,7 @@ func workers() error {
 			return err
 		}
 
-		out, err := exec.CommandContext(ctx, "/usr/bin/odyssey /etc/odyssey/odyssey-new-test.conf --test").Output()
+		out, err := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
 
 		if err != nil {
 			return err
