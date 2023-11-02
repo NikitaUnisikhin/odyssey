@@ -172,4 +172,10 @@ func main() {
 	} else {
 		fmt.Println("checkLogFormat: Ok")
 	}
+
+	if err := checkUnixSocketMode(); err != nil {
+		fmt.Println("error:", err)
+	} else {
+		fmt.Println("checkUnixSocketMode: Ok")
+	}
 }
