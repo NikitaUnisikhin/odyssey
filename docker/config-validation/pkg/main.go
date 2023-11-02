@@ -52,24 +52,11 @@ func changeConfig(prefix string, stringToReplace string) error {
 	return nil
 }
 
-func checkWorkers() error {
-	const currentFieldIsNotPass = "current workers field is not pass"
-	const noCurrentFieldIsPass = "no current workers field is pass"
-	const badField = "bad workers number"
-
-	var tests = []testCase{
-		{"1", configIsValid, currentFieldIsNotPass},
-		{"10", configIsValid, currentFieldIsNotPass},
-		{"\"auto\"", configIsValid, currentFieldIsNotPass},
-		{"-1", badField, noCurrentFieldIsPass},
-		{"0", badField, noCurrentFieldIsPass},
-		{"-10", badField, noCurrentFieldIsPass},
-	}
-
+func check(tests []testCase, field string) error {
 	ctx := context.TODO()
 
 	for _, test := range tests {
-		err := changeConfig("workers", "workers "+test.input)
+		err := changeConfig(field, field+" "+test.input)
 
 		if err != nil {
 			return err
@@ -85,6 +72,23 @@ func checkWorkers() error {
 	return nil
 }
 
+func checkWorkers() error {
+	const currentFieldIsNotPass = "current workers field is not pass"
+	const noCurrentFieldIsPass = "no current workers field is pass"
+	const badField = "bad workers number"
+
+	var tests = []testCase{
+		{"1", configIsValid, currentFieldIsNotPass},
+		{"10", configIsValid, currentFieldIsNotPass},
+		{"\"auto\"", configIsValid, currentFieldIsNotPass},
+		{"-1", badField, noCurrentFieldIsPass},
+		{"0", badField, noCurrentFieldIsPass},
+		{"-10", badField, noCurrentFieldIsPass},
+	}
+
+	return check(tests, "workers")
+}
+
 func checkResolvers() error {
 	const currentFieldIsNotPass = "current resolvers field is not pass"
 	const noCurrentFieldIsPass = "no current resolvers field is pass"
@@ -98,23 +102,7 @@ func checkResolvers() error {
 		{"-10", badField, noCurrentFieldIsPass},
 	}
 
-	ctx := context.TODO()
-
-	for _, test := range tests {
-		err := changeConfig("resolvers", "resolvers "+test.input)
-
-		if err != nil {
-			return err
-		}
-
-		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
-
-		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
-			return errors.New(test.errorMsg)
-		}
-	}
-
-	return nil
+	return check(tests, "resolvers")
 }
 
 func checkCoroutineStackSize() error {
@@ -131,23 +119,24 @@ func checkCoroutineStackSize() error {
 		{"-10", badField, noCurrentFieldIsPass},
 	}
 
-	ctx := context.TODO()
+	return check(tests, "coroutine_stack_size")
+}
 
-	for _, test := range tests {
-		err := changeConfig("coroutine_stack_size", "coroutine_stack_size "+test.input)
+func checkLogFormat() error {
+	const currentFieldIsNotPass = "current log_format field is not pass"
+	const noCurrentFieldIsPass = "no current log_format field is pass"
+	const badField = "log is not defined"
 
-		if err != nil {
-			return err
-		}
-
-		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
-
-		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
-			return errors.New(test.errorMsg)
-		}
+	var tests = []testCase{
+		{"4", configIsValid, currentFieldIsNotPass},
+		{"10", configIsValid, currentFieldIsNotPass},
+		{"-1", badField, noCurrentFieldIsPass},
+		{"3", badField, noCurrentFieldIsPass},
+		{"0", badField, noCurrentFieldIsPass},
+		{"-10", badField, noCurrentFieldIsPass},
 	}
 
-	return nil
+	return check(tests, "log_format")
 }
 
 func main() {
@@ -167,5 +156,11 @@ func main() {
 		fmt.Println("error:", err)
 	} else {
 		fmt.Println("checkCoroutineStackSize: Ok")
+	}
+
+	if err := checkLogFormat(); err != nil {
+		fmt.Println("error:", err)
+	} else {
+		fmt.Println("checkLogFormat: Ok")
 	}
 }
