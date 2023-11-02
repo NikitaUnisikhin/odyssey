@@ -128,15 +128,24 @@ func checkLogFormat() error {
 	const badField = "log is not defined"
 
 	var tests = []testCase{
-		{"4", configIsValid, currentFieldIsNotPass},
-		{"10", configIsValid, currentFieldIsNotPass},
-		{"-1", badField, noCurrentFieldIsPass},
-		{"3", badField, noCurrentFieldIsPass},
-		{"0", badField, noCurrentFieldIsPass},
-		{"-10", badField, noCurrentFieldIsPass},
+		{"%p %t %l [%i %s] (%c) %m\n", configIsValid, currentFieldIsNotPass},
+		{"", badField, noCurrentFieldIsPass},
 	}
 
 	return check(tests, "log_format")
+}
+
+func checkUnixSocketMode() error {
+	const currentFieldIsNotPass = "current unix_socket_mode field is not pass"
+	const noCurrentFieldIsPass = "no current unix_socket_mode field is pass"
+	const badField = "unix_socket_mode is not set"
+
+	var tests = []testCase{
+		{"0644", configIsValid, currentFieldIsNotPass},
+		{"", badField, noCurrentFieldIsPass},
+	}
+
+	return check(tests, "unix_socket_mode")
 }
 
 func main() {
