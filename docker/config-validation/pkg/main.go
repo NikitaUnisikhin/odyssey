@@ -128,7 +128,7 @@ func checkLogFormat() error {
 	const badField = "log is not defined"
 
 	var tests = []testCase{
-		{"%p %t %l [%i %s] (%c) %m\n", configIsValid, currentFieldIsNotPass},
+		{"\"%p %t %l [%i %s] (%c) %m\n\"", configIsValid, currentFieldIsNotPass},
 		{"", badField, noCurrentFieldIsPass},
 	}
 
@@ -141,7 +141,7 @@ func checkUnixSocketMode() error {
 	const badField = "unix_socket_mode is not set"
 
 	var tests = []testCase{
-		{"0644", configIsValid, currentFieldIsNotPass},
+		{"\"0644\"", configIsValid, currentFieldIsNotPass},
 		{"", badField, noCurrentFieldIsPass},
 	}
 
