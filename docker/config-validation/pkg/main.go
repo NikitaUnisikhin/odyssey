@@ -55,15 +55,15 @@ func changeConfig(prefix string, stringToReplace string) error {
 func checkWorkers() error {
 	const currentFieldIsNotPass = "current workers field is not pass"
 	const noCurrentFieldIsPass = "no current workers field is pass"
-	const badWorkersNumber = "bad workers number"
+	const badField = "bad workers number"
 
 	var tests = []testCase{
 		{"1", configIsValid, currentFieldIsNotPass},
 		{"10", configIsValid, currentFieldIsNotPass},
 		{"\"auto\"", configIsValid, currentFieldIsNotPass},
-		{"-1", badWorkersNumber, noCurrentFieldIsPass},
-		{"0", badWorkersNumber, noCurrentFieldIsPass},
-		{"-10", badWorkersNumber, noCurrentFieldIsPass},
+		{"-1", badField, noCurrentFieldIsPass},
+		{"0", badField, noCurrentFieldIsPass},
+		{"-10", badField, noCurrentFieldIsPass},
 	}
 
 	ctx := context.TODO()
@@ -88,20 +88,53 @@ func checkWorkers() error {
 func checkResolvers() error {
 	const currentFieldIsNotPass = "current resolvers field is not pass"
 	const noCurrentFieldIsPass = "no current resolvers field is pass"
-	const badResolversNumber = "bad resolvers number"
+	const badField = "bad resolvers number"
 
 	var tests = []testCase{
 		{"1", configIsValid, currentFieldIsNotPass},
 		{"10", configIsValid, currentFieldIsNotPass},
-		{"-1", badResolversNumber, noCurrentFieldIsPass},
-		{"0", badResolversNumber, noCurrentFieldIsPass},
-		{"-10", badResolversNumber, noCurrentFieldIsPass},
+		{"-1", badField, noCurrentFieldIsPass},
+		{"0", badField, noCurrentFieldIsPass},
+		{"-10", badField, noCurrentFieldIsPass},
 	}
 
 	ctx := context.TODO()
 
 	for _, test := range tests {
 		err := changeConfig("resolvers", "resolvers "+test.input)
+
+		if err != nil {
+			return err
+		}
+
+		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
+
+		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
+			return errors.New(test.errorMsg)
+		}
+	}
+
+	return nil
+}
+
+func checkCoroutineStackSize() error {
+	const currentFieldIsNotPass = "current coroutine_stack_size field is not pass"
+	const noCurrentFieldIsPass = "no current coroutine_stack_size field is pass"
+	const badField = "bad coroutine_stack_size number"
+
+	var tests = []testCase{
+		{"4", configIsValid, currentFieldIsNotPass},
+		{"10", configIsValid, currentFieldIsNotPass},
+		{"-1", badField, noCurrentFieldIsPass},
+		{"3", badField, noCurrentFieldIsPass},
+		{"0", badField, noCurrentFieldIsPass},
+		{"-10", badField, noCurrentFieldIsPass},
+	}
+
+	ctx := context.TODO()
+
+	for _, test := range tests {
+		err := changeConfig("coroutine_stack_size", "coroutine_stack_size "+test.input)
 
 		if err != nil {
 			return err
@@ -127,6 +160,12 @@ func main() {
 	if err := checkResolvers(); err != nil {
 		fmt.Println("error:", err)
 	} else {
-		fmt.Println("checkWorkers: Ok")
+		fmt.Println("checkResolvers: Ok")
+	}
+
+	if err := checkCoroutineStackSize(); err != nil {
+		fmt.Println("error:", err)
+	} else {
+		fmt.Println("checkCoroutineStackSize: Ok")
 	}
 }
