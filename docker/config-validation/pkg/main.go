@@ -14,6 +14,8 @@ import (
 const filePath = "/etc/odyssey/odyssey-test.conf"
 const newFilePath = "/etc/odyssey/odyssey-new-test.conf"
 
+const configIsValid = "config is valid"
+
 type testCase struct {
 	input        string
 	outputPrefix string
@@ -50,13 +52,18 @@ func changeConfig(prefix string, stringToReplace string) error {
 	return nil
 }
 
-func workers() error {
+func checkWorkers() error {
+	const currentFieldIsNotPass = "current workers field is not pass"
+	const noCurrentFieldIsPass = "no current workers field is pass"
+	const badWorkersNumber = "bad workers number"
+
 	var tests = []testCase{
-		{"1", "config is valid", "current workers field is not pass"},
-		{"10", "config is valid", "current workers field is not pass"},
-		{"\"auto\"", "config is valid", "current workers field is not pass"},
-		{"-1", "bad workers number", "no current workers field is pass"},
-		{"-10", "bad workers number", "no current workers field is pass"},
+		{"1", configIsValid, currentFieldIsNotPass},
+		{"10", configIsValid, currentFieldIsNotPass},
+		{"\"auto\"", configIsValid, currentFieldIsNotPass},
+		{"-1", badWorkersNumber, noCurrentFieldIsPass},
+		{"0", badWorkersNumber, noCurrentFieldIsPass},
+		{"-10", badWorkersNumber, noCurrentFieldIsPass},
 	}
 
 	ctx := context.TODO()
@@ -78,10 +85,44 @@ func workers() error {
 	return nil
 }
 
+func checkResolvers() error {
+	const currentFieldIsNotPass = "current resolvers field is not pass"
+	const noCurrentFieldIsPass = "no current resolvers field is pass"
+	const badResolversNumber = "bad resolvers number"
+
+	var tests = []testCase{
+		{"1", configIsValid, currentFieldIsNotPass},
+		{"10", configIsValid, currentFieldIsNotPass},
+		{"-1", badResolversNumber, noCurrentFieldIsPass},
+		{"0", badResolversNumber, noCurrentFieldIsPass},
+		{"-10", badResolversNumber, noCurrentFieldIsPass},
+	}
+
+	ctx := context.TODO()
+
+	for _, test := range tests {
+		err := changeConfig("resolvers", "resolvers "+test.input)
+
+		if err != nil {
+			return err
+		}
+
+		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
+
+		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
+			return errors.New(test.errorMsg)
+		}
+	}
+
+	return nil
+}
+
 func main() {
-	if err := workers(); err != nil {
+	if err := checkWorkers(); err != nil {
+		fmt.Println("error:", err)
+	} else if err := checkResolvers(); err != nil {
 		fmt.Println("error:", err)
 	} else {
-		fmt.Println("workers: Ok")
+		fmt.Println("checkWorkers: Ok")
 	}
 }
