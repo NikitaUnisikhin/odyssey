@@ -12,20 +12,27 @@ import (
 	"strings"
 )
 
-const filePath = "/etc/odyssey/odyssey-test.conf"
-const newFilePath = "/etc/odyssey/odyssey-new-test.conf"
+const configPath = "/etc/odyssey/configs/odyssey-current-test.conf"
+const newConfigPath = "/etc/odyssey/configs/odyssey-generated-test.conf"
 
 const configIsValid = "config is valid"
+
+type action int
+
+const (
+	changeFieldValue action = iota
+	deleteField
+)
 
 type testCase struct {
 	input        string
 	outputPrefix string
 	errorMsg     string
-	deleteField  bool
+	action       action
 }
 
 func changeConfig(pattern string, stringToReplace string) error {
-	file, err := os.Open(filePath)
+	file, err := os.Open(configPath)
 	if err != nil {
 		return err
 	}
@@ -46,7 +53,7 @@ func changeConfig(pattern string, stringToReplace string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(newFilePath, []byte(strings.Join(lines, "\n")), 0644)
+	err = ioutil.WriteFile(newConfigPath, []byte(strings.Join(lines, "\n")), 0644)
 	if err != nil {
 		return err
 	}
@@ -59,9 +66,9 @@ func check(tests []testCase, field string) error {
 
 	for _, test := range tests {
 		var err error
-		if test.deleteField {
+		if test.action == deleteField {
 			err = changeConfig(field+`*`, "")
-		} else {
+		} else if test.action == changeFieldValue {
 			err = changeConfig(field+`*`, field+" "+test.input)
 		}
 
@@ -69,7 +76,7 @@ func check(tests []testCase, field string) error {
 			return err
 		}
 
-		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
+		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", newConfigPath, "--test").Output()
 
 		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
 			return errors.New(test.errorMsg)
@@ -85,12 +92,12 @@ func checkWorkers() error {
 	const badField = "bad workers number"
 
 	var tests = []testCase{
-		{"1", configIsValid, currentFieldIsNotPass, false},
-		{"10", configIsValid, currentFieldIsNotPass, false},
-		{"\"auto\"", configIsValid, currentFieldIsNotPass, false},
-		{"-1", badField, noCurrentFieldIsPass, false},
-		{"0", badField, noCurrentFieldIsPass, false},
-		{"-10", badField, noCurrentFieldIsPass, false},
+		{"1", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"10", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"\"auto\"", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"-1", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"0", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"-10", badField, noCurrentFieldIsPass, changeFieldValue},
 	}
 
 	return check(tests, "workers")
@@ -102,11 +109,11 @@ func checkResolvers() error {
 	const badField = "bad resolvers number"
 
 	var tests = []testCase{
-		{"1", configIsValid, currentFieldIsNotPass, false},
-		{"10", configIsValid, currentFieldIsNotPass, false},
-		{"-1", badField, noCurrentFieldIsPass, false},
-		{"0", badField, noCurrentFieldIsPass, false},
-		{"-10", badField, noCurrentFieldIsPass, false},
+		{"1", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"10", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"-1", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"0", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"-10", badField, noCurrentFieldIsPass, changeFieldValue},
 	}
 
 	return check(tests, "resolvers")
@@ -118,12 +125,12 @@ func checkCoroutineStackSize() error {
 	const badField = "bad coroutine_stack_size number"
 
 	var tests = []testCase{
-		{"4", configIsValid, currentFieldIsNotPass, false},
-		{"10", configIsValid, currentFieldIsNotPass, false},
-		{"-1", badField, noCurrentFieldIsPass, false},
-		{"3", badField, noCurrentFieldIsPass, false},
-		{"0", badField, noCurrentFieldIsPass, false},
-		{"-10", badField, noCurrentFieldIsPass, false},
+		{"4", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"10", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"-1", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"3", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"0", badField, noCurrentFieldIsPass, changeFieldValue},
+		{"-10", badField, noCurrentFieldIsPass, changeFieldValue},
 	}
 
 	return check(tests, "coroutine_stack_size")
@@ -135,8 +142,8 @@ func checkLogFormat() error {
 	const badField = "log is not defined"
 
 	var tests = []testCase{
-		{"\"%p %t %l [%i %s] (%c) %m\\n\"", configIsValid, currentFieldIsNotPass, false},
-		{"", badField, noCurrentFieldIsPass, true},
+		{"\"%p %t %l [%i %s] (%c) %m\\n\"", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"", badField, noCurrentFieldIsPass, deleteField},
 	}
 
 	return check(tests, "log_format")
@@ -148,8 +155,8 @@ func checkUnixSocketMode() error {
 	const badField = "unix_socket_mode is not set"
 
 	var tests = []testCase{
-		{"\"0644\"", configIsValid, currentFieldIsNotPass, false},
-		{"", badField, noCurrentFieldIsPass, true},
+		{"\"0644\"", configIsValid, currentFieldIsNotPass, changeFieldValue},
+		{"", badField, noCurrentFieldIsPass, deleteField},
 	}
 
 	return check(tests, "unix_socket_mode")
