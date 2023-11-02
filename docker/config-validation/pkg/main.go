@@ -83,7 +83,7 @@ func workers() error {
 
 func main() {
 	if err := workers(); err != nil {
-		fmt.Println("error: ", err)
+		fmt.Println("error:", err)
 	} else {
 		fmt.Println("workers: Ok")
 	}
