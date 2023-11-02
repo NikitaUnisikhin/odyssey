@@ -17,6 +17,7 @@ const newFilePath = "/etc/odyssey/odyssey-new-test.conf"
 type testCase struct {
 	input        string
 	outputPrefix string
+	errorMsg     string
 }
 
 func changeConfig(prefix string, stringToReplace string) error {
@@ -51,10 +52,10 @@ func changeConfig(prefix string, stringToReplace string) error {
 
 func workers() error {
 	var tests = []testCase{
-		{"1", "config is valid"},
-		{"10", "config is valid"},
-		{"-1", "bad workers number"},
-		{"-10", "bad workers number"},
+		{"1", "config is valid", "current workers field is not pass"},
+		{"10", "config is valid", "current workers field is not pass"},
+		{"-1", "bad workers number", "no current workers field is pass"},
+		{"-10", "bad workers number", "no current workers field is pass"},
 	}
 
 	ctx := context.TODO()
@@ -73,7 +74,7 @@ func workers() error {
 		}
 
 		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
-			return errors.New("")
+			return errors.New(test.errorMsg)
 		}
 	}
 
@@ -82,7 +83,7 @@ func workers() error {
 
 func main() {
 	if err := workers(); err != nil {
-		fmt.Println("error: workers field")
+		fmt.Println("error: ", err)
 	} else {
 		fmt.Println("workers: Ok")
 	}
