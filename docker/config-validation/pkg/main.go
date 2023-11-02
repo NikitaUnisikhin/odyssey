@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,11 @@ import (
 
 const filePath = "/etc/odyssey/odyssey-test.conf"
 const newFilePath = "/etc/odyssey/odyssey-new-test.conf"
+
+type testCase struct {
+	input        string
+	outputPrefix string
+}
 
 func changeConfig(prefix string, stringToReplace string) error {
 	file, err := os.Open(filePath)
@@ -43,50 +49,40 @@ func changeConfig(prefix string, stringToReplace string) error {
 	return nil
 }
 
-func currentWorkers() error {
+func workers() error {
+	var tests = []testCase{
+		{"1", "config is valid"},
+		{"10", "config is valid"},
+		{"-1", "bad workers number"},
+		{"-10", "bad workers number"},
+	}
+
 	ctx := context.TODO()
 
-	var err error
-	out, err := exec.CommandContext(ctx, "/usr/bin/odyssey /etc/odyssey/odyssey-test.conf --test").Output()
+	for _, test := range tests {
+		err := changeConfig("workers", "workers "+test.input)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	if strOut := string(out); !strings.Contains(strOut, "config is valid") {
-		return err
-	}
+		out, err := exec.CommandContext(ctx, "/usr/bin/odyssey /etc/odyssey/odyssey-new-test.conf --test").Output()
 
-	return nil
-}
+		if err != nil {
+			return err
+		}
 
-func noCurrentWorkers() error {
-	ctx := context.TODO()
-
-	err := changeConfig("workers", "workers -1")
-
-	if err != nil {
-		return err
-	}
-
-	out, err := exec.CommandContext(ctx, "/usr/bin/odyssey /etc/odyssey/odyssey-new-test.conf --test").Output()
-
-	if err != nil {
-		return err
-	}
-
-	if strOut := string(out); !strings.Contains(strOut, "bad workers number") {
-		return err
+		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
+			return errors.New("")
+		}
 	}
 
 	return nil
 }
 
 func main() {
-	if err := currentWorkers(); err == nil {
-		fmt.Println("error: current workers field is not pass")
-	} else if err := noCurrentWorkers(); err == nil {
-		fmt.Println("error: no current workers field is pass")
+	if err := workers(); err != nil {
+		fmt.Println("error: workers field")
 	} else {
 		fmt.Println("workers: Ok")
 	}
