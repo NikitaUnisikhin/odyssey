@@ -54,7 +54,7 @@ func workers() error {
 	var tests = []testCase{
 		{"1", "config is valid", "current workers field is not pass"},
 		{"10", "config is valid", "current workers field is not pass"},
-		{"auto", "config is valid", "current workers field is not pass"},
+		{"\"auto\"", "config is valid", "current workers field is not pass"},
 		{"-1", "bad workers number", "no current workers field is pass"},
 		{"-10", "bad workers number", "no current workers field is pass"},
 	}
@@ -68,7 +68,7 @@ func workers() error {
 			return err
 		}
 
-		out, err := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
+		out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", "/etc/odyssey/odyssey-new-test.conf", "--test").Output()
 
 		if strOut := string(out); !strings.Contains(strOut, test.outputPrefix) {
 			return errors.New(test.errorMsg)
