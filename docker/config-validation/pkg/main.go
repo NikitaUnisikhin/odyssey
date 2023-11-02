@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const pathPrefix = "/etc/odyssey/configs"
+const pathPrefix = "./docker/config-validation/configs"
 const configIsValid = "config is valid"
 
 func check(pathToConfig string, prefix string) error {
