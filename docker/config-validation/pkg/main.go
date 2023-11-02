@@ -12,13 +12,13 @@ import (
 const pathPrefix = "/etc/odyssey/configs"
 const configIsValid = "config is valid"
 
-func makeTest(pathToConfig string, prefix string) error {
+func makeTest(pathToConfig string, errorTriggerMsg string) error {
 	ctx := context.TODO()
 
 	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--test").Output()
 
-	if strOut := string(out); !strings.Contains(strOut, prefix) {
-		return errors.New(strOut)
+	if strOut := string(out); !strings.Contains(strOut, errorTriggerMsg) {
+		return errors.New(errorTriggerMsg)
 	}
 
 	return nil
@@ -48,10 +48,17 @@ func makeTests(field string, errorTriggerMsg string) error {
 	return nil
 }
 
-func main() {
-	if err := makeTests("workers", "bad workers number"); err != nil {
+func printTestsResult(field string, errorTriggerMsg string) {
+	if err := makeTest(field, errorTriggerMsg); err != nil {
 		fmt.Println("error:", err)
 	} else {
-		fmt.Println("workersTest: Ok")
+		fmt.Println(field + "Test: Ok")
 	}
+}
+
+func main() {
+	printTestsResult("workers", "bad workers number")
+	printTestsResult("resolvers", "bad resolvers number")
+	printTestsResult("coroutine_stack_size", "bad coroutine_stack_size number")
+	printTestsResult("log_format", "log is not defined")
 }
