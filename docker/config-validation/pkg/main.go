@@ -12,10 +12,11 @@ import (
 const pathPrefix = "./docker/config-validation/configs"
 const configIsValid = "config is valid"
 
-func check(pathToConfig string, prefix string) error {
+func makeTest(pathToConfig string, prefix string) error {
 	ctx := context.TODO()
 
-	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--test").Output()
+	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--makeTest").Output()
+	fmt.Println(string(out))
 	if strOut := string(out); !strings.Contains(strOut, prefix) {
 		return errors.New(strOut)
 	}
@@ -23,13 +24,23 @@ func check(pathToConfig string, prefix string) error {
 	return nil
 }
 
-func testWorkers() error {
-	pathToDir := pathPrefix + "/workers/valid"
+func makeTests(field string, errorTriggerMsg string) error {
+	pathToDir := pathPrefix + "/" + field + "/valid"
 	configs, _ := ioutil.ReadDir(pathToDir)
 
 	for _, config := range configs {
 		pathToConfig := pathToDir + "/" + config.Name()
-		if err := check(pathToConfig, configIsValid); err != nil {
+		if err := makeTest(pathToConfig, configIsValid); err != nil {
+			return err
+		}
+	}
+
+	pathToDir = pathPrefix + "/" + field + "/invalid"
+	configs, _ = ioutil.ReadDir(pathToDir)
+
+	for _, config := range configs {
+		pathToConfig := pathToDir + "/" + config.Name()
+		if err := makeTest(pathToConfig, errorTriggerMsg); err == nil {
 			return err
 		}
 	}
@@ -38,9 +49,9 @@ func testWorkers() error {
 }
 
 func main() {
-	if err := testWorkers(); err != nil {
-		fmt.Println("error", err)
+	if err := makeTests("workers", "bad workers number"); err != nil {
+		fmt.Println("error:", err)
 	} else {
-		fmt.Println("testWorkers: Ok")
+		fmt.Println("workersTest: Ok")
 	}
 }
