@@ -62,6 +62,7 @@ RUN mkdir /tmp/odyssey
 COPY ./docker/odyssey.conf /etc/odyssey/odyssey.conf
 COPY ./docker/lagpolling/lag-conf.conf /etc/odyssey/lag-conf.conf
 COPY ./docker/prep_stmts/pstmts.conf /etc/odyssey/pstmts.conf
+COPY ./docker/config-validation/configs /etc/odyssey/configs
 
 COPY --from=base /ody-integration-test/pkg/ody-integration-test /ody-integration-test
 COPY --from=base /prep_stmts/pkg/pstmts-test /pstmts-test

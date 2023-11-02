@@ -9,14 +9,14 @@ import (
 	"strings"
 )
 
-const pathPrefix = "./docker/config-validation/configs"
+const pathPrefix = "/etc/odyssey/configs"
 const configIsValid = "config is valid"
 
 func makeTest(pathToConfig string, prefix string) error {
 	ctx := context.TODO()
 
 	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--makeTest").Output()
-	fmt.Println(string(out))
+
 	if strOut := string(out); !strings.Contains(strOut, prefix) {
 		return errors.New(strOut)
 	}
