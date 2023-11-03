@@ -71,7 +71,7 @@ func runTests() {
 		"log_format",
 		"unix_socket_mode_null",
 		"listen_empty",
-		"unix_socket_dir_null",
+		"storage_type_remote",
 		"listen_tls",
 		"storage_type_null",
 		"storage_type",
