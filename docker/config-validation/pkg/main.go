@@ -49,7 +49,7 @@ func makeTests(field string, errorTriggerMsg string) error {
 }
 
 func printTestsResult(field string, errorTriggerMsg string) {
-	if err := makeTest(field, errorTriggerMsg); err != nil {
+	if err := makeTests(field, errorTriggerMsg); err != nil {
 		fmt.Println("error:", err)
 	} else {
 		fmt.Println(field + "Test: Ok")
