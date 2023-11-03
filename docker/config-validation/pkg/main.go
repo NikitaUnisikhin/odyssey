@@ -18,12 +18,10 @@ func makeTest(pathToConfig string, errorTriggerMsg string, isValidConfig bool) e
 
 	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--test").Output()
 
-	if isValidConfig {
-		if strOut := string(out); strings.Contains(strOut, errorTriggerMsg) {
+	if strOut := string(out); strings.Contains(strOut, errorTriggerMsg) {
+		if isValidConfig {
 			return errors.New(errorTriggerMsg)
-		}
-	} else {
-		if strOut := string(out); !strings.Contains(strOut, errorTriggerMsg) {
+		} else {
 			return errors.New(configWithInvalidValuePass)
 		}
 	}
@@ -59,7 +57,7 @@ func printTestsResult(field string, errorTriggerMsg string) {
 	if err := makeTests(field, errorTriggerMsg); err != nil {
 		fmt.Println("error:", err)
 	} else {
-		fmt.Println(field + "Test: Ok")
+		fmt.Println(field + "_test: Ok")
 	}
 }
 
@@ -69,7 +67,8 @@ func main() {
 	printTestsResult("coroutine_stack_size", "bad coroutine_stack_size number")
 	printTestsResult("log_format", "log is not defined")
 	printTestsResult("unix_socket_mode", "unix_socket_mode is not set")
-	printTestsResult("listen", "no listen servers defined")
+	printTestsResult("listen_empty", "no listen servers defined")
 	printTestsResult("unix_socket_dir", "listen host is not set and no unix_socket_dir is specified")
-	printTestsResult("tls", "unknown tls_opts->tls mode")
+	printTestsResult("listen_tls", "unknown tls_opts->tls mode")
+	printTestsResult("storage_type", "unknown storage type")
 }
