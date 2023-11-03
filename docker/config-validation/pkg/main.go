@@ -17,7 +17,7 @@ func makeTest(pathToConfig string, errorTriggerMsg string) error {
 
 	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--test").Output()
 
-	if strOut := string(out); !strings.Contains(strOut, errorTriggerMsg) {
+	if strOut := string(out); strings.Contains(strOut, errorTriggerMsg) {
 		return errors.New(errorTriggerMsg)
 	}
 
@@ -30,7 +30,7 @@ func makeTests(field string, errorTriggerMsg string) error {
 
 	for _, config := range configs {
 		pathToConfig := pathToDir + "/" + config.Name()
-		if err := makeTest(pathToConfig, configIsValid); err != nil {
+		if err := makeTest(pathToConfig, errorTriggerMsg); err != nil {
 			return err
 		}
 	}
@@ -61,4 +61,5 @@ func main() {
 	printTestsResult("resolvers", "bad resolvers number")
 	printTestsResult("coroutine_stack_size", "bad coroutine_stack_size number")
 	printTestsResult("log_format", "log is not defined")
+	printTestsResult("unix_socket_mode", "unix_socket_mode is not set")
 }
