@@ -11,14 +11,21 @@ import (
 
 const pathPrefix = "/etc/odyssey/configs"
 const configIsValid = "config is valid"
+const configWithInvalidValuePass = "config with invalid value pass"
 
-func makeTest(pathToConfig string, errorTriggerMsg string) error {
+func makeTest(pathToConfig string, errorTriggerMsg string, isValidConfig bool) error {
 	ctx := context.TODO()
 
 	out, _ := exec.CommandContext(ctx, "/usr/bin/odyssey", pathToConfig, "--test").Output()
 
-	if strOut := string(out); strings.Contains(strOut, errorTriggerMsg) {
-		return errors.New(errorTriggerMsg)
+	if isValidConfig {
+		if strOut := string(out); strings.Contains(strOut, errorTriggerMsg) {
+			return errors.New(errorTriggerMsg)
+		}
+	} else {
+		if strOut := string(out); !strings.Contains(strOut, errorTriggerMsg) {
+			return errors.New(configWithInvalidValuePass)
+		}
 	}
 
 	return nil
@@ -30,7 +37,7 @@ func makeTests(field string, errorTriggerMsg string) error {
 
 	for _, config := range configs {
 		pathToConfig := pathToDir + "/" + config.Name()
-		if err := makeTest(pathToConfig, errorTriggerMsg); err != nil {
+		if err := makeTest(pathToConfig, errorTriggerMsg, true); err != nil {
 			return err
 		}
 	}
@@ -40,7 +47,7 @@ func makeTests(field string, errorTriggerMsg string) error {
 
 	for _, config := range configs {
 		pathToConfig := pathToDir + "/" + config.Name()
-		if err := makeTest(pathToConfig, errorTriggerMsg); err == nil {
+		if err := makeTest(pathToConfig, configIsValid, false); err == nil {
 			return err
 		}
 	}
@@ -62,4 +69,5 @@ func main() {
 	printTestsResult("coroutine_stack_size", "bad coroutine_stack_size number")
 	printTestsResult("log_format", "log is not defined")
 	printTestsResult("unix_socket_mode", "unix_socket_mode is not set")
+	printTestsResult("listen", "no listen servers defined")
 }
