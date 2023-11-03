@@ -70,4 +70,6 @@ func main() {
 	printTestsResult("log_format", "log is not defined")
 	printTestsResult("unix_socket_mode", "unix_socket_mode is not set")
 	printTestsResult("listen", "no listen servers defined")
+	printTestsResult("unix_socket_dir", "listen host is not set and no unix_socket_dir is specified")
+	printTestsResult("tls", "unknown tls_opts->tls mode")
 }
