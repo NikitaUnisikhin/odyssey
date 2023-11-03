@@ -11,6 +11,7 @@ import (
 
 const pathPrefix = "/etc/odyssey/configs"
 const configIsValid = "config is valid"
+
 const configWithInvalidValuePass = "config with invalid value pass"
 
 func makeTest(pathToConfig string, errorTriggerMsg string, isValidConfig bool) error {
@@ -45,7 +46,7 @@ func makeTests(field string, errorTriggerMsg string) error {
 
 	for _, config := range configs {
 		pathToConfig := pathToDir + "/" + config.Name()
-		if err := makeTest(pathToConfig, configIsValid, false); err == nil {
+		if err := makeTest(pathToConfig, configIsValid, false); err != nil {
 			return err
 		}
 	}
@@ -70,5 +71,8 @@ func main() {
 	printTestsResult("listen_empty", "no listen servers defined")
 	printTestsResult("unix_socket_dir", "listen host is not set and no unix_socket_dir is specified")
 	printTestsResult("listen_tls", "unknown tls_opts->tls mode")
+	printTestsResult("storage_type_null", "no type is specified")
 	printTestsResult("storage_type", "unknown storage type")
+	printTestsResult("storage_type_host_unix_socket_dir", "no host specified and unix_socket_dir is not set")
+	printTestsResult("storage_tls", "unknown storage tls_opts->tls mode")
 }
