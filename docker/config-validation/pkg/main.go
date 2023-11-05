@@ -47,7 +47,7 @@ func makeTests(field string, isValid bool) {
 		if err := makeTest(pathToConfig, isValid); err != nil {
 			fmt.Printf("%s_test_%s_%d (ERROR): %s\n", field, group, ind, err)
 		} else {
-			fmt.Printf("%s_test_%s_%d: Ok", field, group, ind)
+			fmt.Printf("%s_test_%s_%d: Ok\n", field, group, ind)
 		}
 	}
 }
