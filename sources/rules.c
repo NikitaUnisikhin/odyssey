@@ -915,7 +915,6 @@ int od_rules_validate(od_rules_t *rules, od_config_t *config,
 			return -1;
 		}
 		if (strcmp(storage->type, "remote") == 0) {
-		if (strcmp(storage->type, "remote") == 0) {
 			storage->storage_type = OD_RULE_STORAGE_REMOTE;
 		} else if (strcmp(storage->type, "local") == 0) {
 			storage->storage_type = OD_RULE_STORAGE_LOCAL;
