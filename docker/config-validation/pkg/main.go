@@ -21,7 +21,7 @@ func makeTest(pathToConfig string, isValidConfig bool) error {
 	strOut := string(out)
 
 	if isValidConfig && !strings.Contains(strOut, configIsValid) {
-		return errors.New(strOut)
+		return errors.New(strOut + " (" + pathToConfig + ")")
 	}
 
 	if !isValidConfig && strings.Contains(strOut, configIsValid) {
