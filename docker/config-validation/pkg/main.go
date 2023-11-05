@@ -69,11 +69,17 @@ func runTests() {
 		"resolvers",
 		"coroutine_stack_size",
 		"log_format",
-		"unix_socket_mode_null",
+		"unix_socket_mode",
 		"listen_empty",
 		"listen_tls",
 		"storage_type",
 		"storage_tls",
+		"storage_name",
+		"pool_type",
+		"pool_reserve_prepared_statement",
+		"pool_routing",
+		"authentication",
+		"auth_query",
 	}
 
 	for _, test := range tests {
