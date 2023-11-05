@@ -31,28 +31,23 @@ func makeTest(pathToConfig string, isValidConfig bool) error {
 	return nil
 }
 
-func makeTests(field string) {
-	pathToDir := pathPrefix + "/" + field + "/valid"
+func makeTests(field string, isValid bool) {
+	var group string
+	if isValid {
+		group = "valid"
+	} else {
+		group = "invalid"
+	}
+
+	pathToDir := pathPrefix + "/" + field + "/" + group
 	configs, _ := ioutil.ReadDir(pathToDir)
 
 	for ind, config := range configs {
 		pathToConfig := pathToDir + "/" + config.Name()
-		if err := makeTest(pathToConfig, true); err != nil {
-			fmt.Println(field+"_test_valid_"+string(ind)+"(ERROR) :", err)
+		if err := makeTest(pathToConfig, isValid); err != nil {
+			fmt.Printf("%s_test_%s_%d (ERROR): %s\n", field, group, ind, err)
 		} else {
-			fmt.Println(field + "_test_valid_" + string(ind) + ": Ok")
-		}
-	}
-
-	pathToDir = pathPrefix + "/" + field + "/invalid"
-	configs, _ = ioutil.ReadDir(pathToDir)
-
-	for ind, config := range configs {
-		pathToConfig := pathToDir + "/" + config.Name()
-		if err := makeTest(pathToConfig, false); err != nil {
-			fmt.Println(field+"_test_invalid_"+string(ind)+"(ERROR) :", err)
-		} else {
-			fmt.Println(field + "_test_invalid_" + string(ind) + ": Ok")
+			fmt.Printf("%s_test_%s_%d: Ok", field, group, ind)
 		}
 	}
 }
@@ -77,7 +72,8 @@ func runTests() {
 	}
 
 	for _, test := range tests {
-		makeTests(test)
+		makeTests(test, true)
+		makeTests(test, false)
 	}
 }
 
