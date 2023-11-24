@@ -69,7 +69,7 @@ struct od_rule {
 	int user_is_default;
 	char *user_ip;
 	int user_ip_len;
-	int user_ip_default;
+	int user_ip_is_default;
 	od_rule_role_type_t user_role;
 
 	/* auth */
