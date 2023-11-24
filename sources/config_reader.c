@@ -1766,6 +1766,7 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 					    od_extention_t *extentions)
 {
 	watchdog->route_usr = "watchdog_int";
+	watchdog->route_usr_ip = "watchdog_int";
 	watchdog->route_db = "watchdog_int";
 	int user_name_len = 0;
 	user_name_len = strlen(watchdog->route_usr);
@@ -1795,6 +1796,11 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 	rule->db_name_len = strlen(watchdog->route_db);
 	rule->db_name = strdup(watchdog->route_db);
 	if (rule->db_name == NULL)
+		return NOT_OK_RESPONSE;
+	rule->user_ip_is_default = 0;
+	rule->user_ip_len = strlen(watchdog->route_usr_ip);
+	rule->user_ip = strdup(watchdog->route_usr_ip);
+	if (rule->user_ip == NULL)
 		return NOT_OK_RESPONSE;
 
 	/* { */
