@@ -1736,7 +1736,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 	rule->user_ip_is_default = user_ip_is_default;
 	rule->user_ip_len = user_ip_len;
-	rule->user_ip = user_ip;
+	rule->user_ip = strdup(user_ip);
 
 	free(user_name);
 	free(user_ip);
