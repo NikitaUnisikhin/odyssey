@@ -828,8 +828,7 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 		    !od_rules_match(rules, rule->db_name, rule->user_name,
 				    rule->user_ip, rule->db_is_default,
 				    rule->user_is_default,
-				    rule->user_ip_is_default
-				    1)) {
+				    rule->user_ip_is_default, 1)) {
 			need_autogen = true;
 			break;
 		}
