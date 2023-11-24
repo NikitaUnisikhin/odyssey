@@ -1223,8 +1223,8 @@ void od_rules_print(od_rules_t *rules, od_logger_t *logger)
 		rule = od_container_of(i, od_rule_t, link);
 		if (rule->obsolete)
 			continue;
-		od_log(logger, "rules", NULL, NULL, "<%s.%s>", rule->db_name,
-		       rule->user_name);
+		od_log(logger, "rules", NULL, NULL, "<%s.%s.%s>", rule->db_name,
+		       rule->user_name, rule->user_ip);
 		od_log(logger, "rules", NULL, NULL,
 		       "  authentication                    %s", rule->auth);
 		if (rule->auth_common_name_default)
