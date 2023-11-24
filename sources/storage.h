@@ -18,6 +18,7 @@ typedef enum {
 
 struct od_storage_watchdog {
 	char *route_usr;
+	char *route_usr_ip;
 	char *route_db;
 
 	char *storage_user;

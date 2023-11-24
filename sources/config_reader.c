@@ -1774,10 +1774,11 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 	od_rule_t *rule;
 	// TODO: add user_ip at watchdog
 	rule = od_rules_match(reader->rules, watchdog->route_db,
-			      watchdog->route_usr, 0, 0, 1);
+			      watchdog->route_usr, watchdog->route_usr_ip,
+			      0, 0, 1, 1);
 	if (rule) {
-		od_errorf(reader->error, "route '%s.%s': is redefined",
-			  watchdog->route_db, watchdog->route_usr);
+		od_errorf(reader->error, "route '%s.%s.%s': is redefined",
+			  watchdog->route_db, watchdog->route_usr, watchdog->route_usr_ip);
 		return NOT_OK_RESPONSE;
 	}
 	rule = od_rules_add(reader->rules);
