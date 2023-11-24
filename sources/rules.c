@@ -835,7 +835,7 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 	}
 
 	if (!need_autogen ||
-	    od_rules_match(rules, "default_db", "default_user", "default_user_ip" 1, 1, 1, 1)) {
+	    od_rules_match(rules, "default_db", "default_user", "default_user_ip", 1, 1, 1, 1)) {
 		return OK_RESPONSE;
 	}
 
