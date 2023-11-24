@@ -303,9 +303,10 @@ od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
 	return rule_default_default;
 }
 
-od_rule_t *od_rules_match(od_rules_t *rules, char *db_name, char *user_name,
+od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
+			  char *user_name, char *user_ip,
 			  int db_is_default, int user_is_default,
-			  int pool_internal)
+			  int user_ip_is_default, int pool_internal)
 {
 	od_list_t *i;
 	od_list_foreach(&rules->rules, i)
@@ -325,8 +326,10 @@ od_rule_t *od_rules_match(od_rules_t *rules, char *db_name, char *user_name,
 		}
 		if (strcmp(rule->db_name, db_name) == 0 &&
 		    strcmp(rule->user_name, user_name) == 0 &&
+		    strcmp(rule->user_ip, user_ip) == 0 &&
 		    rule->db_is_default == db_is_default &&
-		    rule->user_is_default == user_is_default)
+		    rule->user_is_default == user_is_default &&
+		    rule->user_ip_is_default == user_ip_is_default)
 			return rule;
 	}
 	return NULL;
@@ -823,7 +826,8 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 		/* match storage and make a copy of in the user rules */
 		if (rule->auth_query != NULL &&
 		    !od_rules_match(rules, rule->db_name, rule->user_name,
-				    rule->db_is_default, rule->user_is_default,
+				    rule->user_ip, rule->db_is_default,
+				    rule->user_is_default, rule->user_ip_is_default
 				    1)) {
 			need_autogen = true;
 			break;
@@ -831,12 +835,12 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 	}
 
 	if (!need_autogen ||
-	    od_rules_match(rules, "default_db", "default_user", 1, 1, 1)) {
+	    od_rules_match(rules, "default_db", "default_user", "default_user_ip" 1, 1, 1, 1)) {
 		return OK_RESPONSE;
 	}
 
 	default_rule =
-		od_rules_match(rules, "default_db", "default_user", 1, 1, 0);
+		od_rules_match(rules, "default_db", "default_user", "default_user_ip", 1, 1, 1, 0);
 	if (!default_rule) {
 		od_log(logger, "config", NULL, NULL,
 		       "skipping default internal rule auto-generation: no default rule provided");

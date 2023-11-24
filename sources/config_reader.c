@@ -1673,6 +1673,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 				  int db_name_len, int db_is_default,
 				  od_extention_t *extentions)
 {
+	/* user name reading */
 	char *user_name = NULL;
 	int user_name_len = 0;
 	int user_is_default = 0;
@@ -1692,30 +1693,63 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	}
 	user_name_len = strlen(user_name);
 
+	/* user ip reading */
+	char *user_ip = NULL;
+	int user_ip_len = 0;
+	int user_ip_is_default = 0;
+
+	if (od_config_reader_is(reader, OD_PARSER_STRING)) {
+		if (!od_config_reader_string(reader, &user_ip))
+			return NOT_OK_RESPONSE;
+	} else {
+		if (!od_config_reader_keyword(reader,
+					      &od_config_keywords[OD_LDEFAULT]))
+			return NOT_OK_RESPONSE;
+		user_ip_is_default = 1;
+		user_ip = strdup("default_user_ip");
+		if (user_ip == NULL)
+			return NOT_OK_RESPONSE;
+	}
+	user_ip_len = strlen(user_ip);
+
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
-	rule = od_rules_match(reader->rules, db_name, user_name, db_is_default,
-			      user_is_default, 0);
+	rule = od_rules_match(reader->rules, db_name, user_name, user_ip, db_is_default,
+			      user_is_default, user_ip_is_default, 0);
 	if (rule) {
-		od_errorf(reader->error, "route '%s.%s': is redefined", db_name,
-			  user_name);
+		od_errorf(reader->error, "route '%s.%s.%s': is redefined", db_name,
+			  user_name, user_ip);
 		free(user_name);
+		free(user_ip);
 		return NOT_OK_RESPONSE;
 	}
 	rule = od_rules_add(reader->rules);
 	if (rule == NULL) {
 		free(user_name);
+		free(user_ip);
 		return NOT_OK_RESPONSE;
 	}
+
 	rule->user_is_default = user_is_default;
 	rule->user_name_len = user_name_len;
 	rule->user_name = strdup(user_name);
+
+	rule->user_ip_is_default = user_ip_is_default;
+	rule->user_ip_len = user_ip_len;
+	rule->user_ip = user_ip;
+
 	free(user_name);
+	free(user_ip);
+
 	if (rule->user_name == NULL)
 		return NOT_OK_RESPONSE;
+	if (rule->user_ip == NULL)
+		return NOT_OK_RESPONSE;
+
 	rule->db_is_default = db_is_default;
 	rule->db_name_len = db_name_len;
 	rule->db_name = strdup(db_name);
+
 	if (rule->db_name == NULL)
 		return NOT_OK_RESPONSE;
 
@@ -1738,6 +1772,7 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
+	// TODO: add user_ip at watchdog
 	rule = od_rules_match(reader->rules, watchdog->route_db,
 			      watchdog->route_usr, 0, 0, 1);
 	if (rule) {
