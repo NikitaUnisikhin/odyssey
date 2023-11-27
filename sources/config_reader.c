@@ -1848,7 +1848,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 		}
 		if (od_config_reader_address(&rule->mask,
 					  address) == -1) {
-			od_hba_reader_error(
+			od_config_reader_error(
 				reader, NULL, "invalid network mask");
 			return 1;
 		}
