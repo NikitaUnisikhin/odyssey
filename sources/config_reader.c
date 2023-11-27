@@ -9,7 +9,6 @@
 #include <kiwi.h>
 #include <machinarium.h>
 #include <odyssey.h>
-#include <hba_reader.h>
 
 typedef enum {
 	OD_LYES,
@@ -327,6 +326,29 @@ static od_keyword_t od_role_keywords[] = {
 static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 					    od_storage_watchdog_t *watchdog,
 					    od_extention_t *extentions);
+
+int od_config_reader_address(struct sockaddr_storage *dest,
+			  const char *addr)
+{
+	int rc;
+	rc = inet_pton(AF_INET, addr, &((struct sockaddr_in *)dest)->sin_addr);
+	if (rc > 0) {
+		dest->ss_family = AF_INET;
+		return 0;
+	}
+	if (inet_pton(AF_INET6, addr,
+		      &((struct sockaddr_in6 *)dest)->sin6_addr) > 0) {
+		dest->ss_family = AF_INET6;
+		return 0;
+	}
+	return -1;
+}
+
+inline uint32 od_config_bswap32(uint32 x)
+{
+	return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) |
+	       ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);
+}
 
 static int od_config_reader_open(od_config_reader_t *reader, char *config_file)
 {
@@ -1801,9 +1823,9 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	if (mask)
 		*mask++ = 0;
 
-	if (od_hba_reader_address(&rule->addr, address) ==
+	if (od_config_reader_address(&rule->addr, address) ==
 	    NOT_OK_RESPONSE) {
-		od_hba_reader_error(reader,
+		od_config_reader_error(reader,
 				    "invalid IP address");
 		return 1;
 	}
@@ -1811,24 +1833,24 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	/* network mask */
 	if (mask) {
 		if (od_config_reader_prefix(rule, mask) == -1) {
-			od_hba_reader_error(
+			od_config_reader_error(
 				reader,
 				"invalid network prefix length");
-			goto error;
+			return 1;
 		}
 
 	} else {
 		if (od_config_reader_is(reader, OD_PARSER_STRING)) {
-			od_hba_reader_error(
+			od_config_reader_error(
 				reader,
 				"expected network mask");
-			goto error;
+			return 1;
 		}
-		if (od_hba_reader_address(&rule->mask,
+		if (od_config_reader_address(&rule->mask,
 					  address) == -1) {
 			od_hba_reader_error(
 				reader, "invalid network mask");
-			goto error;
+			return 1;
 		}
 	}
 
