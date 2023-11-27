@@ -1763,8 +1763,8 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 	if (od_hba_reader_address(&rule->addr, address) ==
 	    NOT_OK_RESPONSE) {
-//		od_hba_reader_error(reader,
-//				    "invalid IP address");
+		od_hba_reader_error(reader,
+				    "invalid IP address");
 		return 1;
 	}
 
