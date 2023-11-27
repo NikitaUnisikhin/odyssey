@@ -9,6 +9,7 @@
 #include <kiwi.h>
 #include <machinarium.h>
 #include <odyssey.h>
+#include <hba_reader.h>
 
 typedef enum {
 	OD_LYES,
