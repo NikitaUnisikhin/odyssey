@@ -1708,7 +1708,7 @@ int od_config_reader_prefix(od_rule_t *rule, char *prefix)
 			mask = (0xffffffffUL << (32 - (int)len)) & 0xffffffffUL;
 		else
 			mask = 0;
-		addr->sin_addr.s_addr = od_hba_bswap32(mask);
+		addr->sin_addr.s_addr = od_config_bswap32(mask);
 		return 0;
 	} else if (rule->addr.ss_family == AF_INET6) {
 		if (len > 128)
