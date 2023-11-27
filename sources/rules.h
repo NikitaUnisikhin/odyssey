@@ -67,6 +67,8 @@ struct od_rule {
 	char *user_name;
 	int user_name_len;
 	int user_is_default;
+	struct sockaddr_storage addr;
+	struct sockaddr_storage mask;
 	char *user_ip;
 	int user_ip_len;
 	int user_ip_is_default;

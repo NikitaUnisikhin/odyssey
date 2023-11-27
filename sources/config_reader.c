@@ -1753,6 +1753,18 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	if (rule->db_name == NULL)
 		return NOT_OK_RESPONSE;
 
+	void *address = rule->user_ip;
+	mask = strchr(address, '/');
+	if (mask)
+		*mask++ = 0;
+
+	if (od_hba_reader_address(&rule->addr, address) ==
+	    NOT_OK_RESPONSE) {
+		od_hba_reader_error(reader,
+				    "invalid IP address");
+		return 1;
+	}
+
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
 		return NOT_OK_RESPONSE;
