@@ -1834,7 +1834,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	if (mask) {
 		if (od_config_reader_prefix(rule, mask) == -1) {
 			od_config_reader_error(
-				reader, NULL,
+				reader, &mask,
 				"invalid network prefix length");
 			goto error;
 		}
@@ -1842,14 +1842,14 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	} else {
 		if (od_config_reader_is(reader, OD_PARSER_STRING)) {
 			od_config_reader_error(
-				reader, NULL,
+				reader, &mask,
 				"expected network mask");
 			goto error;
 		}
 		if (od_config_reader_address(&rule->mask,
 					  address) == -1) {
 			od_config_reader_error(
-				reader, NULL, "invalid network mask");
+				reader, &mask, "invalid network mask");
 			goto error;
 		}
 	}
