@@ -37,7 +37,7 @@ static od_keyword_t od_hba_keywords[] = {
 	od_keyword("reject", OD_LDENY),
 };
 
-void od_hba_reader_error(od_config_reader_t *reader, char *msg)
+static void od_hba_reader_error(od_config_reader_t *reader, char *msg)
 {
 	od_errorf(reader->error, "%s:%d %s", reader->config_file,
 		  reader->parser.line, msg);
@@ -174,7 +174,7 @@ static int od_hba_reader_value(od_config_reader_t *reader, void **dest)
 	}
 }
 
-int od_hba_reader_address(struct sockaddr_storage *dest,
+static int od_hba_reader_address(struct sockaddr_storage *dest,
 				 const char *addr)
 {
 	int rc;
@@ -191,7 +191,7 @@ int od_hba_reader_address(struct sockaddr_storage *dest,
 	return -1;
 }
 
-inline uint32 od_hba_bswap32(uint32 x)
+static inline uint32 od_hba_bswap32(uint32 x)
 {
 	return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) |
 	       ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);

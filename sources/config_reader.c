@@ -344,7 +344,7 @@ int od_config_reader_address(struct sockaddr_storage *dest,
 	return -1;
 }
 
-inline uint32 od_config_bswap32(uint32 x)
+static inline uint32 od_config_bswap32(uint32 x)
 {
 	return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) |
 	       ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);
