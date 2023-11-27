@@ -1670,6 +1670,46 @@ static int od_config_reader_rule_settings(od_config_reader_t *reader,
 	return NOT_OK_RESPONSE;
 }
 
+int od_config_reader_prefix(od_rule_t *rule, char *prefix)
+{
+	char *end = NULL;
+	long len = strtoul(prefix, &end, 10);
+	if (*prefix == '\0' || *end != '\0') {
+		return -1;
+	}
+	if (rule->addr.ss_family == AF_INET) {
+		if (len > 32)
+			return -1;
+		struct sockaddr_in *addr = (struct sockaddr_in *)&rule->mask;
+		long mask;
+		if (len > 0)
+			mask = (0xffffffffUL << (32 - (int)len)) & 0xffffffffUL;
+		else
+			mask = 0;
+		addr->sin_addr.s_addr = od_hba_bswap32(mask);
+		return 0;
+	} else if (rule->addr.ss_family == AF_INET6) {
+		if (len > 128)
+			return -1;
+		struct sockaddr_in6 *addr = (struct sockaddr_in6 *)&rule->mask;
+		int i;
+		for (i = 0; i < 16; i++) {
+			if (len <= 0)
+				addr->sin6_addr.s6_addr[i] = 0;
+			else if (len >= 8)
+				addr->sin6_addr.s6_addr[i] = 0xff;
+			else {
+				addr->sin6_addr.s6_addr[i] =
+					(0xff << (8 - (int)len)) & 0xff;
+			}
+			len -= 8;
+		}
+		return 0;
+	}
+
+	return -1;
+}
+
 static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 				  int db_name_len, int db_is_default,
 				  od_extention_t *extentions)
@@ -1766,6 +1806,30 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 		od_hba_reader_error(reader,
 				    "invalid IP address");
 		return 1;
+	}
+
+	/* network mask */
+	if (mask) {
+		if (od_config_reader_prefix(rule, mask) == -1) {
+			od_hba_reader_error(
+				reader,
+				"invalid network prefix length");
+			goto error;
+		}
+
+	} else {
+		if (od_config_reader_is(reader, OD_PARSER_STRING)) {
+			od_hba_reader_error(
+				reader,
+				"expected network mask");
+			goto error;
+		}
+		if (od_hba_reader_address(&rule->mask,
+					  address) == -1) {
+			od_hba_reader_error(
+				reader, "invalid network mask");
+			goto error;
+		}
 	}
 
 	/* { */

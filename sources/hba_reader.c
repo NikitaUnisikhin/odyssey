@@ -191,7 +191,7 @@ int od_hba_reader_address(struct sockaddr_storage *dest,
 	return -1;
 }
 
-static inline uint32 od_hba_bswap32(uint32 x)
+inline uint32 od_hba_bswap32(uint32 x)
 {
 	return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) |
 	       ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);
