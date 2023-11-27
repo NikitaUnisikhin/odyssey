@@ -1827,7 +1827,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	    NOT_OK_RESPONSE) {
 		od_config_reader_error(reader, NULL,
 				    "invalid IP address");
-		return 1;
+		goto error;
 	}
 
 	/* network mask */
@@ -1836,7 +1836,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 			od_config_reader_error(
 				reader, NULL,
 				"invalid network prefix length");
-			return 1;
+			goto error;
 		}
 
 	} else {
@@ -1844,13 +1844,13 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 			od_config_reader_error(
 				reader, NULL,
 				"expected network mask");
-			return 1;
+			goto error;
 		}
 		if (od_config_reader_address(&rule->mask,
 					  address) == -1) {
 			od_config_reader_error(
 				reader, NULL, "invalid network mask");
-			return 1;
+			goto error;
 		}
 	}
 
@@ -1860,6 +1860,8 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 	/* unreach */
 	return od_config_reader_rule_settings(reader, rule, extentions, NULL);
+error:
+	return NOT_OK_RESPONSE;
 }
 
 static inline int od_config_reader_watchdog(od_config_reader_t *reader,
