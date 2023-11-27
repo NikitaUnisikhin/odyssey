@@ -1754,6 +1754,8 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 		return NOT_OK_RESPONSE;
 
 	void *address = rule->user_ip;
+	char *mask = NULL;
+
 	mask = strchr(address, '/');
 	if (mask)
 		*mask++ = 0;
