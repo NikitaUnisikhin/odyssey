@@ -2212,8 +2212,6 @@ void od_frontend(void *arg)
 	/* HBA check */
 	rc = od_hba_process(client);
 
-	printf(rc);
-
 	char client_ip[64];
 	od_getpeername(client->io.io, client_ip, sizeof(client_ip), 1, 0);
 
