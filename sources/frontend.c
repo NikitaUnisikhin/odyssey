@@ -8,7 +8,6 @@
 #include <kiwi.h>
 #include <machinarium.h>
 #include <odyssey.h>
-#include <stdio.h>
 
 static inline void od_frontend_close(od_client_t *client)
 {
