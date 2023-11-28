@@ -93,9 +93,10 @@ bool od_hba_validate_name(char *client_name, od_hba_rule_name_t *name,
 
 int od_hba_process(od_client_t *client)
 {
-	od_log(&client->global->instance->logger, "!!!", NULL, NULL, "!!!");
-
 	od_instance_t *instance = client->global->instance;
+
+	od_log(&instance->logger, "!!!", NULL, NULL, "!!!");
+
 	od_hba_t *hba = client->global->hba;
 	od_list_t *i;
 	od_hba_rule_t *rule;
