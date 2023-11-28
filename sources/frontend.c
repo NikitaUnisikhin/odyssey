@@ -8,6 +8,7 @@
 #include <kiwi.h>
 #include <machinarium.h>
 #include <odyssey.h>
+#include <stdio.h>
 
 static inline void od_frontend_close(od_client_t *client)
 {
@@ -2211,6 +2212,8 @@ void od_frontend(void *arg)
 
 	/* HBA check */
 	rc = od_hba_process(client);
+
+	printf(rc);
 
 	char client_ip[64];
 	od_getpeername(client->io.io, client_ip, sizeof(client_ip), 1, 0);
