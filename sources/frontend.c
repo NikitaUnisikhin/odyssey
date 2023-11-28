@@ -2255,6 +2255,7 @@ void od_frontend(void *arg)
 					     client->startup.user.value);
 		}
 	} else {
+		od_log(&instance->logger, "!!!", client, NULL, "1");
 		od_error(
 			&instance->logger, "auth", client, NULL,
 			"ip '%s' user '%s.%s': host based authentication rejected",
@@ -2265,7 +2266,7 @@ void od_frontend(void *arg)
 			client->rule->user_is_default ?
 				      "(unknown user)" :
 				      client->startup.user.value);
-
+		od_log(&instance->logger, "!!!", client, NULL, "2");
 		od_frontend_error(client, KIWI_INVALID_PASSWORD,
 				  "host based authentication rejected");
 	}
