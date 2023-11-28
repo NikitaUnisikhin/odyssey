@@ -6,7 +6,6 @@
  */
 
 #include <odyssey.h>
-#include <machinarium.h>
 
 void od_hba_init(od_hba_t *hba)
 {
