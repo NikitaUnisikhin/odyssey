@@ -150,11 +150,13 @@ int od_hba_process(od_client_t *client)
 			continue;
 		}
 
+		od_log(&instance->logger, "!!!", client, NULL, "1");
 		rc = rule->auth_method == OD_CONFIG_HBA_ALLOW ? OK_RESPONSE :
 								      NOT_OK_RESPONSE;
 
 		return rc;
 	}
 
+	od_log(&instance->logger, "!!!", client, NULL, "2");
 	return NOT_OK_RESPONSE;
 }
