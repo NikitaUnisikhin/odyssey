@@ -1735,14 +1735,10 @@ int od_config_reader_prefix(od_rule_t *rule, char *prefix)
 int od_config_process(od_client_t *client)
 {
 	od_instance_t *instance = client->global->instance;
-	od_hba_t *hba = client->global->hba;
+	od_route_t *route = client->route;
 	od_list_t *i;
-	od_hba_rule_t *rule;
-	od_hba_rules_t *rules;
-
-	if (instance->config.hba_file == NULL) {
-		return OK_RESPONSE;
-	}
+	od_rule_t *rule;
+	od_rules_t *rules;
 
 	struct sockaddr_storage sa;
 	int salen = sizeof(sa);
@@ -1751,9 +1747,9 @@ int od_config_process(od_client_t *client)
 	if (rc == -1)
 		return -1;
 
-	od_hba_lock(hba);
-	rules = &hba->rules;
-	od_hba_unlock(hba);
+	od_route_lock(route);
+	rules = &route->rules;
+	od_route_unlock(route);
 
 	od_list_foreach(rules, i)
 	{
