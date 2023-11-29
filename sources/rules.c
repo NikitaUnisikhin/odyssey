@@ -281,14 +281,14 @@ bool od_config_validate_addr6(od_rule_t *rule, struct sockaddr_storage *sa)
 
 int od_addr_eq(od_rule_t *rule, struct sockaddr_storage *sa)
 {
-	if (sa.ss_family == AF_INET) {
+	if (sa->ss_family == AF_INET) {
 		if (rule->addr.ss_family != AF_INET ||
-		    !od_config_validate_addr(rule, &sa)) {
+		    !od_config_validate_addr(rule, sa)) {
 			return 0;
 		}
-	} else if (sa.ss_family == AF_INET6) {
+	} else if (sa->ss_family == AF_INET6) {
 		if (rule->addr.ss_family != AF_INET6 ||
-		    !od_config_validate_addr6(rule, &sa)) {
+		    !od_config_validate_addr6(rule, sa)) {
 			return 0;
 		}
 	} else {
