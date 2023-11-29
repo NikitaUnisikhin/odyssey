@@ -371,8 +371,8 @@ od_router_status_t od_router_route(od_router_t *router, od_client_t *client)
 		return OD_ROUTER_ERROR_NOT_FOUND;
 	}
 	od_debug(&instance->logger, "routing", NULL, NULL,
-		 "matching rule: %s %s with %s routing type to %s client",
-		 rule->db_name, rule->user_name,
+		 "matching rule: %s %s %s with %s routing type to %s client",
+		 rule->db_name, rule->user_name, rule->user_ip
 		 rule->pool->routing_type == NULL ? "client visible" :
 							  rule->pool->routing_type,
 		 client->type == OD_POOL_CLIENT_INTERNAL ? "internal" :

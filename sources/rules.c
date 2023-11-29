@@ -253,13 +253,61 @@ void od_rules_unref(od_rule_t *rule)
 		od_rules_rule_free(rule);
 }
 
-od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
-			    int pool_internal)
+bool od_config_validate_addr(od_rule_t *rule, struct sockaddr_storage *sa)
 {
-	od_rule_t *rule_db_user = NULL;
-	od_rule_t *rule_db_default = NULL;
-	od_rule_t *rule_default_user = NULL;
-	od_rule_t *rule_default_default = NULL;
+	struct sockaddr_in *sin = (struct sockaddr_in *)sa;
+	struct sockaddr_in *rule_addr = (struct sockaddr_in *)&rule->addr;
+	struct sockaddr_in *rule_mask = (struct sockaddr_in *)&rule->mask;
+	in_addr_t client_addr = sin->sin_addr.s_addr;
+	in_addr_t client_net = rule_mask->sin_addr.s_addr & client_addr;
+	return (client_net ^ rule_addr->sin_addr.s_addr) == 0;
+}
+
+bool od_config_validate_addr6(od_rule_t *rule, struct sockaddr_storage *sa)
+{
+	struct sockaddr_in6 *sin = (struct sockaddr_in6 *)sa;
+	struct sockaddr_in6 *rule_addr = (struct sockaddr_in6 *)&rule->addr;
+	struct sockaddr_in6 *rule_mask = (struct sockaddr_in6 *)&rule->mask;
+	for (int i = 0; i < 16; ++i) {
+		uint8_t client_net_byte = rule_mask->sin6_addr.s6_addr[i] &
+					  sin->sin6_addr.s6_addr[i];
+		if (client_net_byte ^ rule_addr->sin6_addr.s6_addr[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+int od_addr_eq(od_rule_t *rule, sockaddr_storage *sa)
+{
+	if (sa.ss_family == AF_INET) {
+		if (rule->addr.ss_family != AF_INET ||
+		    !od_config_validate_addr(rule, &sa)) {
+			return 0;
+		}
+	} else if (sa.ss_family == AF_INET6) {
+		if (rule->addr.ss_family != AF_INET6 ||
+		    !od_config_validate_addr6(rule, &sa)) {
+			return 0;
+		}
+	} else {
+		return 0;
+	}
+	return 1;
+}
+
+od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
+			    sockaddr_storage *sa, int pool_internal)
+{
+	od_rule_t *rule_db_user_default = NULL;
+	od_rule_t *rule_db_default_default = NULL;
+	od_rule_t *rule_default_user_default = NULL;
+	od_rule_t *rule_default_default_default = NULL;
+	od_rule_t *rule_db_user_addr = NULL;
+	od_rule_t *rule_db_default_addr = NULL;
+	od_rule_t *rule_default_user_addr = NULL;
+	od_rule_t *rule_default_default_addr = NULL;
 
 	od_list_t *i;
 	od_list_foreach(&rules->rules, i)
@@ -279,26 +327,54 @@ od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
 			}
 		}
 		if (rule->db_is_default) {
-			if (rule->user_is_default)
-				rule_default_default = rule;
-			else if (strcmp(rule->user_name, user_name) == 0)
-				rule_default_user = rule;
+			if (rule->user_is_default) {
+				if (rule->user_ip_is_default)
+					rule_default_default_default = rule;
+				else if (od_addr_eq(rule, sa) == 1)
+					rule_default_default_addr = rule;
+			}
+			else if (strcmp(rule->user_name, user_name) == 0) {
+				if (rule->user_ip_is_default)
+					rule_default_user_default = rule;
+				else if (od_addr_eq(rule, sa) == 1)
+					rule_default_user_addr = rule;
+			}
 		} else if (strcmp(rule->db_name, db_name) == 0) {
-			if (rule->user_is_default)
-				rule_db_default = rule;
-			else if (strcmp(rule->user_name, user_name) == 0)
-				rule_db_user = rule;
+			if (rule->user_is_default) {
+				if (rule->user_ip_is_default)
+					rule_db_default_default = rule;
+				else if (od_addr_eq(rule, sa) == 1)
+					rule_db_default_addr = rule;
+			}
+			else if (strcmp(rule->user_name, user_name) == 0) {
+				if (rule->user_ip_is_default)
+					rule_db_user_default = rule;
+				else if (od_addr_eq(rule, sa) == 1)
+					rule_db_user_addr = rule;
+			}
 		}
 	}
 
-	if (rule_db_user)
-		return rule_db_user;
+	if (rule_db_user_addr)
+		return rule_db_user_addr;
 
-	if (rule_db_default)
-		return rule_db_default;
+	if (rule_db_user_default)
+		return rule_db_user_default;
 
-	if (rule_default_user)
-		return rule_default_user;
+	if (rule_db_default_addr)
+		return rule_db_default_addr;
+
+	if (rule_default_user_addr)
+		return rule_default_user_addr;
+
+	if (rule_db_default_default)
+		return rule_db_default_default;
+
+	if (rule_default_user_default)
+		return rule_default_user_default;
+
+	if (rule_default_default_addr)
+		return rule_default_default_addr;
 
 	return rule_default_default;
 }
