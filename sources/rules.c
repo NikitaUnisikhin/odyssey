@@ -279,7 +279,7 @@ bool od_config_validate_addr6(od_rule_t *rule, struct sockaddr_storage *sa)
 	return true;
 }
 
-int od_addr_eq(od_rule_t *rule, sockaddr_storage *sa)
+int od_addr_eq(od_rule_t *rule, struct sockaddr_storage *sa)
 {
 	if (sa.ss_family == AF_INET) {
 		if (rule->addr.ss_family != AF_INET ||
@@ -298,7 +298,7 @@ int od_addr_eq(od_rule_t *rule, sockaddr_storage *sa)
 }
 
 od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
-			    sockaddr_storage *sa, int pool_internal)
+			    struct sockaddr_storage *sa, int pool_internal)
 {
 	od_rule_t *rule_db_user_default = NULL;
 	od_rule_t *rule_db_default_default = NULL;
