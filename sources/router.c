@@ -344,6 +344,13 @@ od_router_status_t od_router_route(od_router_t *router, od_client_t *client)
 	assert(startup->database.value_len);
 	assert(startup->user.value_len);
 
+	struct sockaddr_storage sa;
+	int salen = sizeof(sa);
+	struct sockaddr *saddr = (struct sockaddr *)&sa;
+	int rc = machine_getpeername(client->io.io, saddr, &salen);
+	if (rc == -1)
+		return OD_ROUTER_ERROR;
+
 	od_router_lock(router);
 
 	/* match latest version of route rule */
