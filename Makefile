@@ -12,7 +12,7 @@ SKIP_CLEANUP_DOCKER:=
 CMAKE_FLAGS:=-DCC_FLAGS="-Wextra -Wstrict-aliasing" -DUSE_SCRAM=YES
 BUILD_TYPE=Release
 
-DEV_CONF=./docker/hba/unix.conf
+DEV_CONF=./docker/hba/tcp.conf
 COMPILE_CONCURRENCY=8
 
 .PHONY: clean apply_fmt
