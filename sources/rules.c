@@ -376,7 +376,7 @@ od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
 	if (rule_default_default_addr)
 		return rule_default_default_addr;
 
-	return rule_default_default;
+	return rule_default_default_default;
 }
 
 od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
