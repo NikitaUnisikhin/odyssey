@@ -2212,10 +2212,15 @@ void od_frontend(void *arg)
 	/* HBA check */
 	rc = od_hba_process(client);
 
+	/* CONFIG check */
+	// int _rc;
+	// _rc = od_config_process(client);
+
 	char client_ip[64];
 	od_getpeername(client->io.io, client_ip, sizeof(client_ip), 1, 0);
 
 	/* client authentication */
+	// if (rc == OK_RESPONSE && _rc == OK_RESPONSE)
 	if (rc == OK_RESPONSE) {
 		/* Check for replication lag and reject query if too big before auth */
 		od_frontend_status_t catchup_status =
@@ -2283,6 +2288,8 @@ void od_frontend(void *arg)
 		}
 		goto cleanup;
 	}
+
+	// if (_rc != OK_RESPONSE) ... cleanup
 
 	/* auth result callback */
 	od_list_foreach(&modules->link, i)

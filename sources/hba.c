@@ -95,6 +95,7 @@ int od_hba_process(od_client_t *client)
 {
 	od_instance_t *instance = client->global->instance;
 	od_hba_t *hba = client->global->hba;
+	od_route_t *route = client->route;
 	od_list_t *i;
 	od_hba_rule_t *rule;
 	od_hba_rules_t *rules;

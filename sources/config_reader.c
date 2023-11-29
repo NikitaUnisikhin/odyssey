@@ -1732,6 +1732,74 @@ int od_config_reader_prefix(od_rule_t *rule, char *prefix)
 	return -1;
 }
 
+int od_config_process(od_client_t *client)
+{
+	od_instance_t *instance = client->global->instance;
+	od_hba_t *hba = client->global->hba;
+	od_list_t *i;
+	od_hba_rule_t *rule;
+	od_hba_rules_t *rules;
+
+	if (instance->config.hba_file == NULL) {
+		return OK_RESPONSE;
+	}
+
+	struct sockaddr_storage sa;
+	int salen = sizeof(sa);
+	struct sockaddr *saddr = (struct sockaddr *)&sa;
+	int rc = machine_getpeername(client->io.io, saddr, &salen);
+	if (rc == -1)
+		return -1;
+
+	od_hba_lock(hba);
+	rules = &hba->rules;
+	od_hba_unlock(hba);
+
+	od_list_foreach(rules, i)
+	{
+		rule = od_container_of(i, od_hba_rule_t, link);
+		if (sa.ss_family == AF_UNIX) {
+			if (rule->connection_type != OD_CONFIG_HBA_LOCAL)
+				continue;
+		} else if (rule->connection_type == OD_CONFIG_HBA_LOCAL) {
+			continue;
+		} else if (rule->connection_type == OD_CONFIG_HBA_HOSTSSL &&
+			   !client->startup.is_ssl_request) {
+			continue;
+		} else if (rule->connection_type == OD_CONFIG_HBA_HOSTNOSSL &&
+			   client->startup.is_ssl_request) {
+			continue;
+		} else if (sa.ss_family == AF_INET) {
+			if (rule->addr.ss_family != AF_INET ||
+			    !od_hba_validate_addr(rule, &sa)) {
+				continue;
+			}
+		} else if (sa.ss_family == AF_INET6) {
+			if (rule->addr.ss_family != AF_INET6 ||
+			    !od_hba_validate_addr6(rule, &sa)) {
+				continue;
+			}
+		}
+
+		if (!od_hba_validate_name(client->rule->db_name,
+					  &rule->database,
+					  client->rule->user_name)) {
+			continue;
+		}
+		if (!od_hba_validate_name(client->rule->user_name, &rule->user,
+					  client->rule->db_name)) {
+			continue;
+		}
+
+		rc = rule->auth_method == OD_CONFIG_HBA_ALLOW ? OK_RESPONSE :
+								NOT_OK_RESPONSE;
+
+		return rc;
+	}
+
+	return NOT_OK_RESPONSE;
+}
+
 static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 				  int db_name_len, int db_is_default,
 				  od_extention_t *extentions)
