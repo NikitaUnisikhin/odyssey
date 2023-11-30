@@ -723,7 +723,7 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 		rc = od_parser_next(&reader->parser, addr_str);
 		switch (rc) {
 		case OD_PARSER_STRING:
-			if (token.value.num == '}') {
+			if (addr_str.value.num == '}') {
 				break;
 			} else {
 				od_config_reader_error(reader, NULL,
