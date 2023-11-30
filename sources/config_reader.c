@@ -716,9 +716,11 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 		return NOT_OK_RESPONSE;
 
 	for (;;) {
-		char *addr_str = NULL;
+		void *addr_str = NULL;
 		char *mask_str = NULL;
-		od_rule_addr_t *addr;
+		od_rule_addr_t *addr = malloc(sizeof(*route));
+		addr->ip = NULL;
+		addr->mask = NULL;
 
 		if (!od_config_reader_is(reader, OD_PARSER_STRING) ||
 		    !od_config_reader_string(reader, &addr_str) ||
@@ -1790,6 +1792,7 @@ static int od_config_reader_rule_settings(od_config_reader_t *reader,
 				return NOT_OK_RESPONSE;
 			}
 			continue;
+		/* addresses */
 		case OD_LADDRESSES: {
 			if (od_config_reader_addresses(reader, rule) ==
 			    NOT_OK_RESPONSE) {
