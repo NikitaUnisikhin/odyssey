@@ -709,18 +709,16 @@ static int od_config_reader_storage_host(od_config_reader_t *reader,
 
 static int od_config_reader_addresses(od_config_reader_t *reader,
 				      od_rule_t *rule) {
-	od_config_t *config = reader->rules;
-	od_list_t *addresses = rule->addresses;
-	od_list_init(addresses);
+	od_list_t addresses = rule->addresses;
+	od_list_init(&addresses);
 
 	if (!od_config_reader_symbol(reader, '{'))
 		return NOT_OK_RESPONSE;
 
 	for (;;) {
 		char *addr_str = NULL;
+		char *mask_str = NULL;
 		od_rule_addr_t *addr;
-		addr->ip = NULL;
-		addr->mask = NULL;
 
 		if (!od_config_reader_is(reader, OD_PARSER_STRING) ||
 		    !od_config_reader_string(reader, &addr_str) ||
@@ -730,9 +728,9 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 			goto error;
 		}
 
-		mask = strchr(addr_str, '/');
-		if (mask)
-			*mask++ = 0;
+		mask_str = strchr(addr_str, '/');
+		if (mask_str)
+			*mask_str++ = 0;
 
 		if (od_config_reader_address(&addr->ip, addr_str) ==
 		    NOT_OK_RESPONSE) {
@@ -742,29 +740,29 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 		}
 
 		/* network mask */
-		if (mask) {
-			if (od_config_reader_prefix(addr, mask) == -1) {
+		if (mask_str) {
+			if (od_config_reader_prefix(addr, mask_str) == -1) {
 				od_config_reader_error(
-					reader, &mask,
+					reader, &mask_str,
 					"invalid network prefix length");
 				goto error;
 			}
 		} else {
 			if (od_config_reader_is(reader, OD_PARSER_STRING)) {
 				od_config_reader_error(
-					reader, &mask,
+					reader, &mask_str,
 					"expected network mask");
 				goto error;
 			}
 			if (od_config_reader_address(&addr->mask,
 						     addr_str) == -1) {
 				od_config_reader_error(
-					reader, &mask, "invalid network mask");
+					reader, &mask_str, "invalid network mask");
 				goto error;
 			}
 		}
 
-		od_list_append(addresses, &addr->link);
+		od_list_append(&addresses, &addr->link);
 	}
 
 error:
