@@ -722,7 +722,7 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 
 		rc = od_parser_next(&reader->parser, addr_str);
 		switch (rc) {
-		case OD_PARSER_STRING:
+		case OD_PARSER_SYMBOL:
 			if (addr_str.value.num == '}') {
 				break;
 			} else {
@@ -730,14 +730,13 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 						       "expected IP address");
 				goto error;
 			}
-			break;
 		case OD_PARSER_STRING:
-			if (!od_config_reader_string(reader, &addr_str || addr_str == NULL) {
+			if (!od_config_reader_string(reader, &addr_str ||
+							addr_str == NULL) {
 				od_config_reader_error(reader, NULL,
 						   "expected IP address");
 				goto error;
 			}
-			break;
 		}
 
 		mask_str = strchr(addr_str, '/');
