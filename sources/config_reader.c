@@ -718,7 +718,7 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 	for (;;) {
 		void *addr_str = NULL;
 		char *mask_str = NULL;
-		od_rule_addr_t *addr = malloc(sizeof(*route));
+		od_rule_addr_t *addr = malloc(sizeof(*addr));
 		addr->ip = NULL;
 		addr->mask = NULL;
 
