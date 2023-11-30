@@ -716,12 +716,12 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 		return NOT_OK_RESPONSE;
 
 	for (;;) {
-		char *addr_str = NULL;
+		void *addr_str = NULL;
 		char *mask_str = NULL;
 		od_rule_addr_t *addr = malloc(sizeof(*addr));
 
 		int rc;
-		rc = od_parser_next(&reader->parser, addr_str);
+		rc = od_parser_next(&reader->parser, &addr_str);
 
 		switch (rc) {
 		case OD_PARSER_SYMBOL:
