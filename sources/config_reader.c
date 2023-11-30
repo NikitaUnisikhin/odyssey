@@ -732,7 +732,7 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 			}
 		case OD_PARSER_STRING:
 			if (!od_config_reader_string(reader, &addr_str ||
-							addr_str == NULL) {
+							addr_str == NULL)) {
 				od_config_reader_error(reader, NULL,
 						   "expected IP address");
 				goto error;
