@@ -720,12 +720,23 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 		char *mask_str = NULL;
 		od_rule_addr_t *addr = malloc(sizeof(*addr));
 
-		if (!od_config_reader_is(reader, OD_PARSER_STRING) ||
-		    !od_config_reader_string(reader, &addr_str) ||
-		    addr_str == NULL) {
-			od_config_reader_error(reader, NULL,
-					       "expected IP address");
-			goto error;
+		rc = od_parser_next(&reader->parser, addr_str);
+		switch (rc) {
+		case OD_PARSER_STRING:
+			if (token.value.num == '}') {
+				break;
+			} else {
+				od_config_reader_error(reader, NULL,
+						       "expected IP address");
+				goto error;
+			}
+			break;
+		case OD_PARSER_STRING:
+			if (!od_config_reader_string(reader, &addr_str || addr_str == NULL)
+				od_config_reader_error(reader, NULL,
+						   "expected IP address");
+				goto error;
+			}
 		}
 
 		mask_str = strchr(addr_str, '/');
