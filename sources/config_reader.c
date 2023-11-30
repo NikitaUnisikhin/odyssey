@@ -143,6 +143,7 @@ typedef enum {
 	OD_LOPTIONS,
 	OD_LBACKEND_STARTUP_OPTIONS,
 	OD_LHBA_FILE,
+	OD_LADDRESSES,
 } od_lexeme_t;
 
 static od_keyword_t od_config_keywords[] = {
@@ -276,6 +277,8 @@ static od_keyword_t od_config_keywords[] = {
 	od_keyword("load_module", OD_LMODULE),
 	od_keyword("hba_file", OD_LHBA_FILE),
 
+	od_keyword("addresses", OD_LADDRESSES),
+
 	/* ldap */
 	od_keyword("ldap_endpoint", OD_LLDAP_ENDPOINT),
 	od_keyword("ldapserver", OD_LLDAP_SERVER),
@@ -326,6 +329,69 @@ static od_keyword_t od_role_keywords[] = {
 static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 					    od_storage_watchdog_t *watchdog,
 					    od_extention_t *extentions);
+
+int od_config_reader_address(struct sockaddr_storage *dest,
+			     const char *addr)
+{
+	int rc;
+	rc = inet_pton(AF_INET, addr, &((struct sockaddr_in *)dest)->sin_addr);
+	if (rc > 0) {
+		dest->ss_family = AF_INET;
+		return 0;
+	}
+	if (inet_pton(AF_INET6, addr,
+		      &((struct sockaddr_in6 *)dest)->sin6_addr) > 0) {
+		dest->ss_family = AF_INET6;
+		return 0;
+	}
+	return -1;
+}
+
+static inline uint32 od_config_bswap32(uint32 x)
+{
+	return ((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) |
+	       ((x >> 8) & 0x0000ff00) | ((x >> 24) & 0x000000ff);
+}
+
+int od_config_reader_prefix(od_rule_addr_t *address, char *prefix)
+{
+	char *end = NULL;
+	long len = strtoul(prefix, &end, 10);
+	if (*prefix == '\0' || *end != '\0') {
+		return -1;
+	}
+	if (address->ip.ss_family == AF_INET) {
+		if (len > 32)
+			return -1;
+		struct sockaddr_in *addr = (struct sockaddr_in *)&address->mask;
+		long mask;
+		if (len > 0)
+			mask = (0xffffffffUL << (32 - (int)len)) & 0xffffffffUL;
+		else
+			mask = 0;
+		addr->sin_addr.s_addr = od_config_bswap32(mask);
+		return 0;
+	} else if (address->ip.ss_family == AF_INET6) {
+		if (len > 128)
+			return -1;
+		struct sockaddr_in6 *addr = (struct sockaddr_in6 *)&address->mask;
+		int i;
+		for (i = 0; i < 16; i++) {
+			if (len <= 0)
+				addr->sin6_addr.s6_addr[i] = 0;
+			else if (len >= 8)
+				addr->sin6_addr.s6_addr[i] = 0xff;
+			else {
+				addr->sin6_addr.s6_addr[i] =
+					(0xff << (8 - (int)len)) & 0xff;
+			}
+			len -= 8;
+		}
+		return 0;
+	}
+
+	return -1;
+}
 
 static int od_config_reader_open(od_config_reader_t *reader, char *config_file)
 {
@@ -639,6 +705,70 @@ static int od_config_reader_storage_host(od_config_reader_t *reader,
 	}
 
 	return OK_RESPONSE;
+}
+
+static int od_config_reader_addresses(od_config_reader_t *reader,
+				      od_rule_t *rule) {
+	od_config_t *config = reader->rules;
+	od_list_t *addresses = rule->addresses;
+	od_list_init(addresses);
+
+	if (!od_config_reader_symbol(reader, '{'))
+		return NOT_OK_RESPONSE;
+
+	for (;;) {
+		char *addr_str = NULL;
+		od_rule_addr_t *addr;
+		addr->ip = NULL;
+		addr->mask = NULL;
+
+		if (!od_config_reader_is(reader, OD_PARSER_STRING) ||
+		    !od_config_reader_string(reader, &addr_str) ||
+		    addr_str == NULL) {
+			od_config_reader_error(reader, NULL,
+					       "invalid IP address");
+			goto error;
+		}
+
+		mask = strchr(addr_str, '/');
+		if (mask)
+			*mask++ = 0;
+
+		if (od_config_reader_address(&addr->ip, addr_str) ==
+		    NOT_OK_RESPONSE) {
+			od_config_reader_error(reader, NULL,
+					       "invalid IP address");
+			goto error;
+		}
+
+		/* network mask */
+		if (mask) {
+			if (od_config_reader_prefix(addr, mask) == -1) {
+				od_config_reader_error(
+					reader, &mask,
+					"invalid network prefix length");
+				goto error;
+			}
+		} else {
+			if (od_config_reader_is(reader, OD_PARSER_STRING)) {
+				od_config_reader_error(
+					reader, &mask,
+					"expected network mask");
+				goto error;
+			}
+			if (od_config_reader_address(&addr->mask,
+						     addr_str) == -1) {
+				od_config_reader_error(
+					reader, &mask, "invalid network mask");
+				goto error;
+			}
+		}
+
+		od_list_append(addresses, &addr->link);
+	}
+
+error:
+	return NOT_OK_RESPONSE;
 }
 
 static int od_config_reader_listen(od_config_reader_t *reader)
@@ -1662,6 +1792,13 @@ static int od_config_reader_rule_settings(od_config_reader_t *reader,
 				return NOT_OK_RESPONSE;
 			}
 			continue;
+		case OD_LADDRESSES: {
+			if (od_config_reader_addresses(reader, rule) ==
+			    NOT_OK_RESPONSE) {
+				return NOT_OK_RESPONSE;
+			}
+			continue;
+		}
 		default:
 			return NOT_OK_RESPONSE;
 		}

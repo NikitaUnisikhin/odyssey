@@ -10,6 +10,7 @@
 typedef struct od_rule_auth od_rule_auth_t;
 typedef struct od_rule od_rule_t;
 typedef struct od_rules od_rules_t;
+typedef struct od_rule_addr od_rule_addr_t;
 
 typedef enum {
 	OD_RULE_AUTH_UNDEF,
@@ -111,6 +112,9 @@ struct od_rule {
 	char *storage_password;
 	int storage_password_len;
 
+	/* ip pool */
+	od_list_t addresses;
+
 	/* pool */
 	od_rule_pool_t *pool;
 	int catchup_timeout;
@@ -147,6 +151,12 @@ struct od_rules {
 	od_list_t ldap_endpoints;
 #endif
 	od_list_t rules;
+};
+
+struct od_rule_addr {
+	struct sockaddr_storage ip;
+	struct sockaddr_storage mask;
+	od_list_t link;
 };
 
 /* rules */
