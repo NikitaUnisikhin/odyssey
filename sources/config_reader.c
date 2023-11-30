@@ -716,7 +716,7 @@ static int od_config_reader_addresses(od_config_reader_t *reader,
 		return NOT_OK_RESPONSE;
 
 	for (;;) {
-		void *addr_str = NULL;
+		char *addr_str = NULL;
 		char *mask_str = NULL;
 		od_rule_addr_t *addr = malloc(sizeof(*addr));
 
