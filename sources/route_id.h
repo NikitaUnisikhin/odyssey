@@ -14,8 +14,8 @@ struct od_route_id {
 	int user_len;
 	char *database;
 	int database_len;
-	struct sockaddr_storage *addr;
-	struct sockaddr_storage *mask;
+	struct sockaddr_storage addr;
+	struct sockaddr_storage mask;
 	bool physical_rep;
 	bool logical_rep;
 };
