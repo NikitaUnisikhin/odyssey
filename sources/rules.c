@@ -253,6 +253,31 @@ void od_rules_unref(od_rule_t *rule)
 		od_rules_rule_free(rule);
 }
 
+bool od_config_compare_inet_addr(struct sockaddr_storage *firstAddress, struct sockaddr_storage *secondAddress)
+{
+	if (firstAddress->ss_family != secondAddress->ss_family)
+		return false;
+
+	if (firstAddress->ss_family == AF_INET) {
+		struct sockaddr_in *addr1 = (struct sockaddr_in *)firstAddress;
+		struct sockaddr_in *addr2 = (struct sockaddr_in *)secondAddress;
+		return (addr1->sin_addr.s_addr ^ addr2->sin_addr.s_addr) == 0;
+	} else if (firstAddress->ss_family == AF_INET6) {
+		struct sockaddr_in6 *sin = (struct sockaddr_in6 *)sa;
+		struct sockaddr_in6 *rule_addr = (struct sockaddr_in6 *)&rule->addr;
+		struct sockaddr_in6 *rule_mask = (struct sockaddr_in6 *)&rule->mask;
+		for (int i = 0; i < 16; ++i) {
+			uint8_t client_net_byte = rule_mask->sin6_addr.s6_addr[i] &
+						  sin->sin6_addr.s6_addr[i];
+			if (client_net_byte ^ rule_addr->sin6_addr.s6_addr[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 bool od_config_validate_addr(od_rule_t *rule, struct sockaddr_storage *sa)
 {
 	struct sockaddr_in *sin = (struct sockaddr_in *)sa;
@@ -380,9 +405,10 @@ od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
 }
 
 od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
-			  char *user_name, char *user_ip,
+			  char *user_name, struct sockaddr_storage *addr,
+			  struct sockaddr_storage *mask,
 			  int db_is_default, int user_is_default,
-			  int user_ip_is_default, int pool_internal)
+			  int user_addr_is_default, int pool_internal)
 {
 	od_list_t *i;
 	od_list_foreach(&rules->rules, i)
@@ -402,10 +428,11 @@ od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
 		}
 		if (strcmp(rule->db_name, db_name) == 0 &&
 		    strcmp(rule->user_name, user_name) == 0 &&
-		    strcmp(rule->user_ip, user_ip) == 0 &&
+		    od_route_id_compare(&rule->addr, addr) == 0 &&
+		    od_route_id_compare(&rule->mask, mask) == 0 &&
 		    rule->db_is_default == db_is_default &&
 		    rule->user_is_default == user_is_default &&
-		    rule->user_ip_is_default == user_ip_is_default)
+		    rule->user_addr_is_default == user_addr_is_default)
 			return rule;
 	}
 	return NULL;

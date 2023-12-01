@@ -14,9 +14,8 @@ struct od_route_id {
 	int user_len;
 	char *database;
 	int database_len;
-	// TODO: replace to sockaddr_storage
-	char *user_ip;
-	int user_ip_len;
+	struct sockaddr_storage addr;
+	struct sockaddr_storage mask;
 	bool physical_rep;
 	bool logical_rep;
 };
@@ -27,8 +26,8 @@ static inline void od_route_id_init(od_route_id_t *id)
 	id->user_len = 0;
 	id->database = NULL;
 	id->database_len = 0;
-	id->user_ip = NULL;
-	id->user_ip_len = 0;
+	id->addr = malloc(sizeof(sockaddr_storage));
+	id->mask = malloc(sizeof(sockaddr_storage));
 	id->physical_rep = false;
 	id->logical_rep = false;
 }
@@ -39,8 +38,10 @@ static inline void od_route_id_free(od_route_id_t *id)
 		free(id->database);
 	if (id->user)
 		free(id->user);
-	if (id->user_ip)
-		free(id->user_ip);
+	if (id->addr)
+		free(id->addr);
+	if (id->mask)
+		free(id->mask);
 }
 
 static inline int od_route_id_copy(od_route_id_t *dest, od_route_id_t *id)
@@ -60,16 +61,26 @@ static inline int od_route_id_copy(od_route_id_t *dest, od_route_id_t *id)
 	memcpy(dest->user, id->user, id->user_len);
 	dest->user_len = id->user_len;
 
-	dest->user_ip = malloc(id->user_ip_len);
-	if (dest->user_ip == NULL) {
+	dest->addr = malloc(id->addr);
+	if (dest->addr == NULL) {
 		free(dest->database);
 		dest->database = NULL;
 		free(dest->user);
 		dest->user = NULL;
 		return -1;
 	}
-	memcpy(dest->user_ip, id->user_ip, id->user_ip_len);
-	dest->user_ip_len = id->user_ip_len;
+	dest->addr = id->addr;
+
+	dest->mask= malloc(id->mask);
+	if (dest->mask == NULL) {
+		free(dest->database);
+		dest->database = NULL;
+		free(dest->user);
+		dest->user = NULL;
+		free(dest->addr);
+		return -1;
+	}
+	dest->addr = id->addr;
 
 	dest->physical_rep = id->physical_rep;
 	dest->logical_rep = id->logical_rep;
@@ -79,11 +90,11 @@ static inline int od_route_id_copy(od_route_id_t *dest, od_route_id_t *id)
 static inline int od_route_id_compare(od_route_id_t *a, od_route_id_t *b)
 {
 	if (a->database_len == b->database_len &&
-	    a->user_len == b->user_len &&
-	    a->user_ip_len == b->user_ip_len) {
+	    a->user_len == b->user_len) {
 		if (memcmp(a->database, b->database, a->database_len) == 0 &&
 		    memcmp(a->user, b->user, a->user_len) == 0 &&
-		    memcmp(a->user_ip, b->user_ip, a->user_ip_len) &&
+		    od_config_compare_inet_addr(a->addr, b->addr) &&
+		    od_config_compare_inet_addr(a->mask, b->mask) &&
 		    a->logical_rep == b->logical_rep)
 			if (a->physical_rep == b->physical_rep)
 				return 1;
