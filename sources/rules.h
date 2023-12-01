@@ -165,6 +165,9 @@ void od_rules_print(od_rules_t *, od_logger_t *);
 
 int od_rules_cleanup(od_rules_t *rules);
 
+bool od_config_compare_inet_addr(struct sockaddr_storage *firstAddress,
+				 struct sockaddr_storage *secondAddress);
+
 /* rule */
 od_rule_t *od_rules_add(od_rules_t *);
 void od_rules_ref(od_rule_t *);
