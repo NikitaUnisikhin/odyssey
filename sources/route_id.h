@@ -14,8 +14,8 @@ struct od_route_id {
 	int user_len;
 	char *database;
 	int database_len;
-	struct sockaddr_storage *addr;
-	struct sockaddr_storage *mask;
+	struct sockaddr_storage *user_addr;
+	struct sockaddr_storage *user_mask;
 	bool physical_rep;
 	bool logical_rep;
 };
@@ -93,8 +93,8 @@ static inline int od_route_id_compare(od_route_id_t *a, od_route_id_t *b)
 	    a->user_len == b->user_len) {
 		if (memcmp(a->database, b->database, a->database_len) == 0 &&
 		    memcmp(a->user, b->user, a->user_len) == 0 &&
-		    od_config_compare_inet_addr(&a->addr, &b->addr) &&
-		    od_config_compare_inet_addr(&a->mask, &b->mask) &&
+		    od_config_compare_inet_addr(&a->user_addr, &b->user_addr) &&
+		    od_config_compare_inet_addr(&a->user_mask, &b->user_mask) &&
 		    a->logical_rep == b->logical_rep)
 			if (a->physical_rep == b->physical_rep)
 				return 1;
