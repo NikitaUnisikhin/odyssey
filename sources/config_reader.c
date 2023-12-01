@@ -1779,32 +1779,32 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	user_name_len = strlen(user_name);
 
 	/* user ip reading */
-	char *user_addr_str = NULL;
-	int user_addr_str_len = 0;
-	int user_addr_is_default = 0;
+	char *addr_str = NULL;
+	int addr_str_len = 0;
+	int addr_is_default = 0;
 
 	if (od_config_reader_is(reader, OD_PARSER_STRING)) {
-		if (!od_config_reader_string(reader, &user_addr))
+		if (!od_config_reader_string(reader, &addr))
 			return NOT_OK_RESPONSE;
 	} else {
 		if (!od_config_reader_keyword(reader,
 					      &od_config_keywords[OD_LDEFAULT]))
 			return NOT_OK_RESPONSE;
-		user_addr_is_default = 1;
-		user_addr = strdup("default_user_addr");
-		if (user_addr == NULL)
+		addr_is_default = 1;
+		addr = strdup("default_addr");
+		if (addr == NULL)
 			return NOT_OK_RESPONSE;
 	}
-	user_addr_len = strlen(user_addr);
+	addr_len = strlen(addr);
 
-	void *user_addr = rule->user_addr;
-	char *user_mask_str = NULL;
+	void *addr = rule->addr;
+	char *mask_str = NULL;
 
-	user_mask_str = strchr(user_addr, '/');
-	if (user_mask_str)
-		*user_mask_str++ = 0;
+	mask_str = strchr(addr, '/');
+	if (mask_str)
+		*mask_str++ = 0;
 
-	if (od_config_reader_address(&rule->user_addr, user_addr) ==
+	if (od_config_reader_address(&rule->addr, addr) ==
 	    NOT_OK_RESPONSE) {
 		od_config_reader_error(reader, NULL,
 				    "invalid IP address");
@@ -1812,44 +1812,44 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	}
 
 	/* network mask */
-	if (user_mask_str) {
-		if (od_config_reader_prefix(rule, user_mask_str) == -1) {
+	if (mask_str) {
+		if (od_config_reader_prefix(rule, mask_str) == -1) {
 			od_config_reader_error(
-				reader, &user_mask_str,
+				reader, &mask_str,
 				"invalid network prefix length");
 			goto error;
 		}
 	} else {
 		if (od_config_reader_is(reader, OD_PARSER_STRING)) {
 			od_config_reader_error(
-				reader, &user_mask_str,
+				reader, &mask_str,
 				"expected network mask");
 			goto error;
 		}
-		if (od_config_reader_address(&rule->user_mask,
-					  user_addr) == -1) {
+		if (od_config_reader_address(&rule->mask,
+					  addr) == -1) {
 			od_config_reader_error(
-				reader, &user_mask_str, "invalid network mask");
+				reader, &mask_str, "invalid network mask");
 			goto error;
 		}
 	}
 
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
-	rule = od_rules_match(reader->rules, db_name, user_name, user_addr,
+	rule = od_rules_match(reader->rules, db_name, user_name, addr,
 			      db_is_default, user_is_default,
-			      user_addr_is_default, 0);
+			      addr_is_default, 0);
 	if (rule) {
 		od_errorf(reader->error, "route '%s.%s.%s': is redefined", db_name,
-			  user_name, user_addr_str);
+			  user_name, addr_str);
 		free(user_name);
-		free(user_addr_str);
+		free(addr_str);
 		return NOT_OK_RESPONSE;
 	}
 	rule = od_rules_add(reader->rules);
 	if (rule == NULL) {
 		free(user_name);
-		free(user_addr_str);
+		free(addr_str);
 		return NOT_OK_RESPONSE;
 	}
 
@@ -1857,16 +1857,16 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	rule->user_name_len = user_name_len;
 	rule->user_name = strdup(user_name);
 
-	rule->user_addr_is_default = user_addr_is_default;
-	rule->user_addr_str_len = user_addr_len;
-	rule->user_addr_str = strdup(user_addr);
+	rule->addr_is_default = addr_is_default;
+	rule->addr_str_len = addr_len;
+	rule->addr_str = strdup(addr);
 
 	free(user_name);
-	free(user_addr);
+	free(addr);
 
 	if (rule->user_name == NULL)
 		return NOT_OK_RESPONSE;
-	if (rule->user_addr_str == NULL)
+	if (rule->addr_str == NULL)
 		return NOT_OK_RESPONSE;
 
 	rule->db_is_default = db_is_default;
