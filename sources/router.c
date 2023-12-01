@@ -389,7 +389,7 @@ od_router_status_t od_router_route(od_router_t *router, od_client_t *client)
 			     .database_len = startup->database.value_len,
 			     .user_len = startup->user.value_len,
 			     .user_ip = rule->user_ip,
-			     .user_ip_len = rule->user_ip_len,
+			     .user_addr_len = rule->user_addr_len,
 			     .physical_rep = false,
 			     .logical_rep = false };
 	if (rule->storage_db) {

@@ -1797,7 +1797,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	}
 	addr_len = strlen(addr);
 
-	void *addr = rule->addr;
+	void *addr = NULL;
 	char *mask_str = NULL;
 
 	mask_str = strchr(addr, '/');
@@ -1836,7 +1836,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
-	rule = od_rules_match(reader->rules, db_name, user_name, addr,
+	rule = od_rules_match(reader->rules, db_name, user_name, addr, mask
 			      db_is_default, user_is_default,
 			      addr_is_default, 0);
 	if (rule) {
@@ -1858,8 +1858,6 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	rule->user_name = strdup(user_name);
 
 	rule->addr_is_default = addr_is_default;
-	rule->addr_str_len = addr_len;
-	rule->addr_str = strdup(addr);
 
 	free(user_name);
 	free(addr);
@@ -1922,11 +1920,7 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 	rule->db_name = strdup(watchdog->route_db);
 	if (rule->db_name == NULL)
 		return NOT_OK_RESPONSE;
-	rule->user_ip_is_default = 0;
-	rule->user_ip_len = strlen(watchdog->route_usr_ip);
-	rule->user_ip = strdup(watchdog->route_usr_ip);
-	if (rule->user_ip == NULL)
-		return NOT_OK_RESPONSE;
+	rule->addr_is_default = 0;
 
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
