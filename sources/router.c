@@ -372,7 +372,7 @@ od_router_status_t od_router_route(od_router_t *router, od_client_t *client)
 	}
 	od_debug(&instance->logger, "routing", NULL, NULL,
 		 "matching rule: %s %s %s with %s routing type to %s client",
-		 rule->db_name, rule->user_name, rule->user_ip,
+		 rule->db_name, rule->user_name, od_convert_addr_to_string(rule->addr),
 		 rule->pool->routing_type == NULL ? "client visible" :
 							  rule->pool->routing_type,
 		 client->type == OD_POOL_CLIENT_INTERNAL ? "internal" :
@@ -388,7 +388,6 @@ od_router_status_t od_router_route(od_router_t *router, od_client_t *client)
 			     .user = startup->user.value,
 			     .database_len = startup->database.value_len,
 			     .user_len = startup->user.value_len,
-			     .user_ip = rule->user_ip,
 			     .addr = rule->addr,
 			     .mask = rule->mask,
 			     .physical_rep = false,

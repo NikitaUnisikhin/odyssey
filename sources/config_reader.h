@@ -11,6 +11,8 @@ extern int od_config_reader_import(od_config_t *, od_rules_t *, od_error_t *,
 				   od_extention_t *, od_global_t *,
 				   od_hba_rules_t *, char *);
 
+char od_convert_addr_to_string(const struct sockaddr_storage *sa);
+
 #define OD_READER_ERROR_MAX_LEN 1 << 8
 
 static inline void od_config_reader_error(od_config_reader_t *reader,

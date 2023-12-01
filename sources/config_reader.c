@@ -1732,22 +1732,22 @@ int od_config_reader_prefix(od_rule_t *rule, char *prefix)
 	return -1;
 }
 
-static char od_convert_addr_to_string(const struct sockaddr_storage *sa,
-				      char *s, size_t maxlen)
+char od_convert_addr_to_string(const struct sockaddr_storage *sa)
 {
+	char *s = NULL;
 	switch(sa->ss_family) {
 	case AF_INET:
 		inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),
-			  s, maxlen);
+			  s, INET_ADDRSTRLEN);
 		break;
 
 	case AF_INET6:
 		inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr),
-			  s, maxlen);
+			  s, INET6_ADDRSTRLEN);
 		break;
 
 	default:
-		strncpy(s, "Unknown AF", maxlen);
+		strncpy(s, "Unknown AF", 10);
 		return NULL;
 	}
 
@@ -1793,7 +1793,6 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 					      &od_config_keywords[OD_LDEFAULT]))
 			return NOT_OK_RESPONSE;
 		addr_is_default = 1;
-		addr = strdup("default_addr");
 		if (addr == NULL)
 			return NOT_OK_RESPONSE;
 	}
@@ -1837,7 +1836,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	}
 
 	/* ensure rule does not exists and add new rule */
-	rule = od_rules_match(reader->rules, db_name, user_name, addr, mask
+	rule = od_rules_match(reader->rules, db_name, user_name, addr, rule->mask
 			      db_is_default, user_is_default,
 			      addr_is_default, 0);
 	if (rule) {
@@ -1864,8 +1863,6 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	free(addr);
 
 	if (rule->user_name == NULL)
-		return NOT_OK_RESPONSE;
-	if (rule->addr_str == NULL)
 		return NOT_OK_RESPONSE;
 
 	rule->db_is_default = db_is_default;
@@ -1897,9 +1894,8 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
-	// TODO: add user_ip at watchdog
 	rule = od_rules_match(reader->rules, watchdog->route_db,
-			      watchdog->route_usr, watchdog->route_usr_ip,
+			      watchdog->route_usr, watchdog->route_addr, watchdog->route_mask,
 			      0, 0, 1, 1);
 	if (rule) {
 		od_errorf(reader->error, "route '%s.%s.%s': is redefined",
