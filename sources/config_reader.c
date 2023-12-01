@@ -1758,6 +1758,8 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 				  int db_name_len, int db_is_default,
 				  od_extention_t *extentions)
 {
+	od_rule_t *rule;
+
 	/* user name reading */
 	char *user_name = NULL;
 	int user_name_len = 0;
@@ -1784,7 +1786,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	int addr_is_default = 0;
 
 	if (od_config_reader_is(reader, OD_PARSER_STRING)) {
-		if (!od_config_reader_string(reader, &addr))
+		if (!od_config_reader_string(reader, &addr_str))
 			return NOT_OK_RESPONSE;
 	} else {
 		if (!od_config_reader_keyword(reader,
@@ -1795,7 +1797,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 		if (addr == NULL)
 			return NOT_OK_RESPONSE;
 	}
-	addr_len = strlen(addr);
+	addr_str_len = strlen(addr);
 
 	void *addr = NULL;
 	char *mask_str = NULL;
@@ -1835,7 +1837,6 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	}
 
 	/* ensure rule does not exists and add new rule */
-	od_rule_t *rule;
 	rule = od_rules_match(reader->rules, db_name, user_name, addr, mask
 			      db_is_default, user_is_default,
 			      addr_is_default, 0);
