@@ -266,8 +266,6 @@ bool od_config_compare_inet_addr(struct sockaddr_storage *firstAddress, struct s
 		struct sockaddr_in *addr1 = (struct sockaddr_in6 *)firstAddress;
 		struct sockaddr_in *addr2 = (struct sockaddr_in6 *)secondAddress;
 		for (int i = 0; i < 16; ++i) {
-			uint8_t client_net_byte = rule_mask->sin6_addr.s6_addr[i] &
-						  sin->sin6_addr.s6_addr[i];
 			if (addr1->sin6_addr.s6_addr[i] ^ addr2->sin6_addr.s6_addr[i]) {
 				return false;
 			}
@@ -322,7 +320,7 @@ int od_addr_eq(od_rule_t *rule, struct sockaddr_storage *sa)
 }
 
 od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
-			    struct sockaddr_storage *sa, int pool_internal)
+			    struct sockaddr_storage *addr, int pool_internal)
 {
 	od_rule_t *rule_db_user_default = NULL;
 	od_rule_t *rule_db_default_default = NULL;
@@ -352,28 +350,28 @@ od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name, char *user_name,
 		}
 		if (rule->db_is_default) {
 			if (rule->user_is_default) {
-				if (rule->user_ip_is_default)
+				if (rule->addr_is_default)
 					rule_default_default_default = rule;
-				else if (od_addr_eq(rule, sa) == 1)
+				else if (od_addr_eq(rule, addr) == 1)
 					rule_default_default_addr = rule;
 			}
 			else if (strcmp(rule->user_name, user_name) == 0) {
-				if (rule->user_ip_is_default)
+				if (rule->addr_is_default)
 					rule_default_user_default = rule;
-				else if (od_addr_eq(rule, sa) == 1)
+				else if (od_addr_eq(rule, addr) == 1)
 					rule_default_user_addr = rule;
 			}
 		} else if (strcmp(rule->db_name, db_name) == 0) {
 			if (rule->user_is_default) {
-				if (rule->user_ip_is_default)
+				if (rule->addr_is_default)
 					rule_db_default_default = rule;
-				else if (od_addr_eq(rule, sa) == 1)
+				else if (od_addr_eq(rule, addr) == 1)
 					rule_db_default_addr = rule;
 			}
 			else if (strcmp(rule->user_name, user_name) == 0) {
-				if (rule->user_ip_is_default)
+				if (rule->addr_is_default)
 					rule_db_user_default = rule;
-				else if (od_addr_eq(rule, sa) == 1)
+				else if (od_addr_eq(rule, addr) == 1)
 					rule_db_user_addr = rule;
 			}
 		}
@@ -407,7 +405,7 @@ od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
 			  char *user_name, struct sockaddr_storage *addr,
 			  struct sockaddr_storage *mask,
 			  int db_is_default, int user_is_default,
-			  int user_addr_is_default, int pool_internal)
+			  int addr_is_default, int pool_internal)
 {
 	od_list_t *i;
 	od_list_foreach(&rules->rules, i)
@@ -431,7 +429,7 @@ od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
 		    od_route_id_compare(&rule->mask, mask) == 0 &&
 		    rule->db_is_default == db_is_default &&
 		    rule->user_is_default == user_is_default &&
-		    rule->user_addr_is_default == user_addr_is_default)
+		    rule->addr_is_default == addr_is_default)
 			return rule;
 	}
 	return NULL;
