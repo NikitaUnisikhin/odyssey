@@ -263,8 +263,8 @@ bool od_config_compare_inet_addr(struct sockaddr_storage *firstAddress, struct s
 		struct sockaddr_in *addr2 = (struct sockaddr_in *)secondAddress;
 		return (addr1->sin_addr.s_addr ^ addr2->sin_addr.s_addr) == 0;
 	} else if (firstAddress->ss_family == AF_INET6) {
-		struct sockaddr_in *addr1 = (struct sockaddr_in6 *)firstAddress;
-		struct sockaddr_in *addr2 = (struct sockaddr_in6 *)secondAddress;
+		struct sockaddr_in6 *addr1 = (struct sockaddr_in6 *)firstAddress;
+		struct sockaddr_in6 *addr2 = (struct sockaddr_in6 *)secondAddress;
 		for (int i = 0; i < 16; ++i) {
 			if (addr1->sin6_addr.s6_addr[i] ^ addr2->sin6_addr.s6_addr[i]) {
 				return false;
@@ -926,7 +926,7 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 		/* match storage and make a copy of in the user rules */
 		if (rule->auth_query != NULL &&
 		    !od_rules_match(rules, rule->db_name, rule->user_name,
-				    rule->user_ip, rule->addr, rule->mask,
+				    rule->addr, rule->mask,
 				    rule->db_is_default, rule->user_is_default,
 				    rule->addr_is_default, 1)) {
 			need_autogen = true;
