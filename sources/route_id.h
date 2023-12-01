@@ -14,8 +14,8 @@ struct od_route_id {
 	int user_len;
 	char *database;
 	int database_len;
-	struct sockaddr_storage addr;
-	struct sockaddr_storage mask;
+	struct sockaddr_storage *addr;
+	struct sockaddr_storage *mask;
 	bool physical_rep;
 	bool logical_rep;
 };
@@ -26,8 +26,8 @@ static inline void od_route_id_init(od_route_id_t *id)
 	id->user_len = 0;
 	id->database = NULL;
 	id->database_len = 0;
-	id->addr = malloc(sizeof(sockaddr_storage));
-	id->mask = malloc(sizeof(sockaddr_storage));
+	id->addr = malloc(sizeof(struct sockaddr_storage *));
+	id->mask = malloc(sizeof(struct sockaddr_storage *));
 	id->physical_rep = false;
 	id->logical_rep = false;
 }
@@ -61,7 +61,7 @@ static inline int od_route_id_copy(od_route_id_t *dest, od_route_id_t *id)
 	memcpy(dest->user, id->user, id->user_len);
 	dest->user_len = id->user_len;
 
-	dest->addr = malloc(id->addr);
+	dest->addr = malloc(sizeof(struct sockaddr_storage *));
 	if (dest->addr == NULL) {
 		free(dest->database);
 		dest->database = NULL;
@@ -71,7 +71,7 @@ static inline int od_route_id_copy(od_route_id_t *dest, od_route_id_t *id)
 	}
 	dest->addr = id->addr;
 
-	dest->mask= malloc(id->mask);
+	dest->mask= malloc(sizeof(struct sockaddr_storage *));
 	if (dest->mask == NULL) {
 		free(dest->database);
 		dest->database = NULL;
