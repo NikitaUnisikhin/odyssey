@@ -177,7 +177,7 @@ int od_rules_compare(od_rule_t *, od_rule_t *);
 od_rule_t *od_rules_forward(od_rules_t *, char *, char *, struct sockaddr_storage *, int);
 
 /* search rule with desored characteristik */
-od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
+od_rule_t *od_rules_match(od_rules_t *rules, char *db_name,
 			  char *user_name, struct sockaddr_storage *addr,
 			  struct sockaddr_storage *mask,
 			  int db_is_default, int user_is_default,
