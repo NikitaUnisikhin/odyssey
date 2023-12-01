@@ -918,6 +918,12 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 	od_rule_t *default_rule;
 	od_list_t *i;
 	bool need_autogen = false;
+
+	struct sockaddr_storage default_addr;
+	od_config_reader_address(&default_addr, "127.0.0.1");
+	struct sockaddr_storage default_mask;
+	od_config_reader_address(&default_mask, "255.255.255.255");
+
 	/* rules */
 	od_list_foreach(&rules->rules, i)
 	{
@@ -935,12 +941,12 @@ int od_rules_autogenerate_defaults(od_rules_t *rules, od_logger_t *logger)
 	}
 
 	if (!need_autogen ||
-	    od_rules_match(rules, "default_db", "default_user", "default_user_ip", 1, 1, 1, 1)) {
+	    od_rules_match(rules, "default_db", "default_user", default_addr, default_mask, 1, 1, 1, 1)) {
 		return OK_RESPONSE;
 	}
 
 	default_rule =
-		od_rules_match(rules, "default_db", "default_user", "default_user_ip", 1, 1, 1, 0);
+		od_rules_match(rules, "default_db", "default_user", default_addr, default_mask, 1, 1, 1, 0);
 	if (!default_rule) {
 		od_log(logger, "config", NULL, NULL,
 		       "skipping default internal rule auto-generation: no default rule provided");
