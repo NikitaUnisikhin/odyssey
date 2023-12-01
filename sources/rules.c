@@ -425,8 +425,8 @@ od_rule_t *od_rules_match(od_rules_t *rules,char *db_name,
 		}
 		if (strcmp(rule->db_name, db_name) == 0 &&
 		    strcmp(rule->user_name, user_name) == 0 &&
-		    od_route_id_compare(rule->addr, addr) == 0 &&
-		    od_route_id_compare(rule->mask, mask) == 0 &&
+		    od_route_id_compare(&rule->addr, addr) == 0 &&
+		    od_route_id_compare(&rule->mask, mask) == 0 &&
 		    rule->db_is_default == db_is_default &&
 		    rule->user_is_default == user_is_default &&
 		    rule->addr_is_default == addr_is_default)
@@ -1330,7 +1330,7 @@ void od_rules_print(od_rules_t *rules, od_logger_t *logger)
 		if (rule->obsolete)
 			continue;
 		od_log(logger, "rules", NULL, NULL, "<%s.%s.%s>", rule->db_name,
-		       rule->user_name, od_convert_addr_to_string(rule->addr));
+		       rule->user_name, od_convert_addr_to_string(&rule->addr));
 		od_log(logger, "rules", NULL, NULL,
 		       "  authentication                    %s", rule->auth);
 		if (rule->auth_common_name_default)
