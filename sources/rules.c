@@ -263,13 +263,12 @@ bool od_config_compare_inet_addr(struct sockaddr_storage *firstAddress, struct s
 		struct sockaddr_in *addr2 = (struct sockaddr_in *)secondAddress;
 		return (addr1->sin_addr.s_addr ^ addr2->sin_addr.s_addr) == 0;
 	} else if (firstAddress->ss_family == AF_INET6) {
-		struct sockaddr_in6 *sin = (struct sockaddr_in6 *)sa;
-		struct sockaddr_in6 *rule_addr = (struct sockaddr_in6 *)&rule->addr;
-		struct sockaddr_in6 *rule_mask = (struct sockaddr_in6 *)&rule->mask;
+		struct sockaddr_in *addr1 = (struct sockaddr_in6 *)firstAddress;
+		struct sockaddr_in *addr2 = (struct sockaddr_in6 *)secondAddress;
 		for (int i = 0; i < 16; ++i) {
 			uint8_t client_net_byte = rule_mask->sin6_addr.s6_addr[i] &
 						  sin->sin6_addr.s6_addr[i];
-			if (client_net_byte ^ rule_addr->sin6_addr.s6_addr[i]) {
+			if (addr1->sin6_addr.s6_addr[i] ^ addr2->sin6_addr.s6_addr[i]) {
 				return false;
 			}
 		}

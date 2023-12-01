@@ -93,8 +93,8 @@ static inline int od_route_id_compare(od_route_id_t *a, od_route_id_t *b)
 	    a->user_len == b->user_len) {
 		if (memcmp(a->database, b->database, a->database_len) == 0 &&
 		    memcmp(a->user, b->user, a->user_len) == 0 &&
-		    od_config_compare_inet_addr(a->addr, b->addr) &&
-		    od_config_compare_inet_addr(a->mask, b->mask) &&
+		    od_config_compare_inet_addr(&a->addr, &b->addr) &&
+		    od_config_compare_inet_addr(&a->mask, &b->mask) &&
 		    a->logical_rep == b->logical_rep)
 			if (a->physical_rep == b->physical_rep)
 				return 1;
