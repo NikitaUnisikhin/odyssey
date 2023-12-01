@@ -1735,7 +1735,7 @@ int od_config_reader_prefix(od_rule_t *rule, char *prefix)
 static char od_convert_addr_to_string(const struct sockaddr_storage *sa,
 				      char *s, size_t maxlen)
 {
-	switch(sa->sa_family) {
+	switch(sa->ss_family) {
 	case AF_INET:
 		inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),
 			  s, maxlen);
