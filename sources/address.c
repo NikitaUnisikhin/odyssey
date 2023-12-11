@@ -8,7 +8,9 @@
 #include <machinarium.h>
 #include <odyssey.h>
 
-void od_address_range_init(od_address_range_t *address_range) {
+void od_address_range_init(od_address_range_t *address_range)
+{
+	address_range = malloc(sizeof(od_address_range_t));
 	address_range->string = NULL;
 	address_range->string_len = 0;
 	address_range->is_default = 0;
