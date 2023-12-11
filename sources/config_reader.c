@@ -1731,7 +1731,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	char *mask_str = NULL;
 
 	if (od_config_reader_is(reader, OD_PARSER_STRING)) {
-		if (!od_config_reader_string(reader, address_range->string))
+		if (!od_config_reader_string(reader, &address_range->string))
 			return NOT_OK_RESPONSE;
 	} else {
 		bool is_default_keyword;
