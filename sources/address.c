@@ -8,10 +8,10 @@
 #include <machinarium.h>
 #include <odyssey.h>
 
-void od_address_range_default_init(od_address_range_t *address_range) {
-	address_range->string = strdup("all");
-	address_range->string_len = strlen("all");
-	address_range->is_default = 1;
+void od_address_range_init(od_address_range_t *address_range) {
+	address_range->string = NULL;
+	address_range->string_len = 0;
+	address_range->is_default = 0;
 }
 
 int od_address_read_prefix(od_address_range_t *address_range, char *prefix)

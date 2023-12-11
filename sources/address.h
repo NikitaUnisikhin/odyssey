@@ -17,7 +17,7 @@ struct od_address_range {
 	int is_default;
 };
 
-void od_address_range_default_init(od_address_range_t *);
+void od_address_range_init(od_address_range_t *);
 
 int od_address_read_prefix(od_address_range_t *, char *);
 
