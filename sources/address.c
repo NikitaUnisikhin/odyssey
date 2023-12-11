@@ -8,9 +8,17 @@
 #include <machinarium.h>
 #include <odyssey.h>
 
-int od_address_read_prefix(struct sockaddr_storage *addr,
-			   struct sockaddr_storage *mask, char *prefix)
+void od_address_range_default_init(od_address_range_t *address_range) {
+	address_range->string = strdup("all");
+	address_range->string_len = strlen("all");
+	address_range->is_default = 1;
+}
+
+int od_address_read_prefix(od_address_range_t *address_range, char *prefix)
 {
+	struct sockaddr_storage *addr = &address_range->addr;
+	struct sockaddr_storage *mask = &address_range->mask;
+
 	char *end = NULL;
 	long len = strtoul(prefix, &end, 10);
 	if (*prefix == '\0' || *end != '\0') {

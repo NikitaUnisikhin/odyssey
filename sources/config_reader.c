@@ -1723,16 +1723,15 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	}
 	user_name_len = strlen(user_name);
 
-	/* address and mask or default */
-	char *addr_mask = NULL;
-	char *addr_str = NULL;
-	struct sockaddr_storage addr;
+	/* address_range or default */
+	od_address_range_t *address_range;
+	od_address_range_default_init(address_range);
+
+	char *address_str = NULL;
 	char *mask_str = NULL;
-	struct sockaddr_storage mask;
-	int addr_mask_is_default = 0;
 
 	if (od_config_reader_is(reader, OD_PARSER_STRING)) {
-		if (!od_config_reader_string(reader, &addr_mask))
+		if (!od_config_reader_string(reader, address_range->string))
 			return NOT_OK_RESPONSE;
 	} else {
 		bool is_default_keyword;
@@ -1745,19 +1744,19 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 		if (is_default_keyword)
 			od_config_reader_keyword(reader, &od_config_keywords[OD_LDEFAULT]);
 
-		addr_mask_is_default = 1;
-		addr_mask = strdup("all");
-		if (addr_mask == NULL)
+		address_range->is_default = 1;
+		address_range->string = strdup("all");
+		if (address_range->string == NULL)
 			return NOT_OK_RESPONSE;
 	}
 
-	if (addr_mask_is_default == 0) {
-		addr_str = strdup(addr_mask);
-		mask_str = strchr(addr_str, '/');
+	if (address_range->is_default == 0) {
+		address_str = strdup(address_range->string);
+		mask_str = strchr(address_str, '/');
 		if (mask_str)
 			*mask_str++ = 0;
 
-		if (od_address_read(&addr, addr_str) ==
+		if (od_address_read(&address_range->addr, address_str) ==
 		    NOT_OK_RESPONSE) {
 			od_config_reader_error(reader, NULL, "invalid IP address");
 			return NOT_OK_RESPONSE;
@@ -1765,7 +1764,7 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 		/* network mask */
 		if (mask_str) {
-			if (od_address_read_prefix(&addr, &mask, mask_str) == -1) {
+			if (od_address_read_prefix(address_range, mask_str) == -1) {
 				od_config_reader_error(
 					reader, NULL,
 					"invalid network prefix length");
@@ -1779,11 +1778,11 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
-	rule = od_rules_match(reader->rules, db_name, user_name, &addr, &mask,
-			      db_is_default, user_is_default, addr_mask_is_default, 0);
+	rule = od_rules_match(reader->rules, db_name, user_name, address_range,
+			      db_is_default, user_is_default, 0);
 	if (rule) {
-		od_errorf(reader->error, "route '%s.%s.<%s>': is redefined", db_name,
-			  user_name, addr_mask);
+		od_errorf(reader->error, "route '%s.%s': is redefined",
+			  db_name, user_name);
 		free(user_name);
 		return NOT_OK_RESPONSE;
 	}
@@ -1807,14 +1806,10 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	if (rule->db_name == NULL)
 		return NOT_OK_RESPONSE;
 
-	rule->addr_mask_is_default = addr_mask_is_default;
-	rule->addr_mask_len = strlen(addr_mask);
-	rule->addr_mask = strdup(addr_mask);
-	free(addr_mask);
-	free(addr_str);
-
-	rule->addr = addr;
-	rule->mask = mask;
+	address_range->string_len = strlen(address_range->string);
+	rule->address_range = *address_range;
+	free(address_str);
+	free(mask_str);
 
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
@@ -1836,7 +1831,7 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 	/* ensure rule does not exists and add new rule */
 	od_rule_t *rule;
 	rule = od_rules_match(reader->rules, watchdog->route_db,
-			      watchdog->route_usr, NULL, NULL, 0, 0, 1, 1);
+			      watchdog->route_usr, NULL, 0, 0, 1);
 	if (rule) {
 		od_errorf(reader->error, "route '%s.%s': is redefined",
 			  watchdog->route_db, watchdog->route_usr);
@@ -1858,9 +1853,9 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 	if (rule->db_name == NULL)
 		return NOT_OK_RESPONSE;
 
-	rule->addr_mask = "all";
-	rule->addr_mask_len = strlen("all");
-	rule->addr_mask_is_default = 1;
+	rule->address_range.string = "all";
+	rule->address_range.string_len = strlen("all");
+	rule->rule->address_range. = 1;
 
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
