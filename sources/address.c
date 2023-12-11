@@ -30,7 +30,7 @@ int od_address_read_prefix(od_address_range_t *address_range, char *prefix)
 			mask = (0xffffffffUL << (32 - (int)len)) & 0xffffffffUL;
 		else
 			mask = 0;
-		addr->sin_addr.s_addr = od_hba_bswap32(mask);
+		addr->sin_addr.s_addr = od_address_bswap32(mask);
 		return 0;
 	} else if (address_range->addr.ss_family == AF_INET6) {
 		if (len > 128)
