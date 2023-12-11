@@ -178,7 +178,7 @@ void od_rules_rule_free(od_rule_t *rule)
 		free(rule->db_name);
 	if (rule->user_name)
 		free(rule->user_name);
-	if (rule->address_range)
+	if (rule->address_range.string)
 		free(rule->address_range.string);
 	if (rule->password)
 		free(rule->password);
@@ -318,26 +318,26 @@ od_rule_t *od_rules_forward(od_rules_t *rules, char *db_name,
 			if (rule->user_is_default) {
 				if (rule->address_range.is_default)
 					rule_default_default_default = rule;
-				else if (od_rules_validate_addr(rule->address_range, user_addr))
+				else if (od_rules_validate_addr(&rule->address_range, user_addr))
 					rule_default_default_addr = rule;
 			}
 			else if (strcmp(rule->user_name, user_name) == 0) {
 				if (rule->address_range.is_default)
 					rule_default_user_default = rule;
-				else if (od_rules_validate_addr(rule->address_range, user_addr))
+				else if (od_rules_validate_addr(&rule->address_range, user_addr))
 					rule_default_user_addr = rule;
 			}
 		} else if (strcmp(rule->db_name, db_name) == 0) {
 			if (rule->user_is_default) {
 				if (rule->address_range.is_default)
 					rule_db_default_default = rule;
-				else if (od_rules_validate_addr(rule->address_range, user_addr))
+				else if (od_rules_validate_addr(&rule->address_range, user_addr))
 					rule_db_default_addr = rule;
 			}
 			else if (strcmp(rule->user_name, user_name) == 0) {
 				if (rule->address_range.is_default)
 					rule_db_user_default = rule;
-				else if (od_rules_validate_addr(rule->address_range, user_addr))
+				else if (od_rules_validate_addr(&rule->address_range, user_addr))
 					rule_db_user_addr = rule;
 			}
 		}
@@ -413,8 +413,8 @@ static inline od_rule_t *od_rules_match_active(od_rules_t *rules, char *db_name,
 			continue;
 		if (strcmp(rule->db_name, db_name) == 0 &&
 		    strcmp(rule->user_name, user_name) == 0 &&
-		    od_address_inet_equals(&rule->address_range.addr, address_range->addr) &&
-		    od_address_inet_equals(&rule->address_range.mask, address_range->mask))
+		    od_address_inet_equals(&rule->address_range.addr, &address_range->addr) &&
+		    od_address_inet_equals(&rule->address_range.mask, &address_range->mask))
 			return rule;
 	}
 	return NULL;

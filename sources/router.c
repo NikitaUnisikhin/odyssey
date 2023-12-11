@@ -149,7 +149,7 @@ int od_router_reconfigure(od_router_t *router, od_rules_t *rules)
 			rk = od_container_of(i, od_rule_key_t, link);
 			od_log(&instance->logger, "reload config", NULL, NULL,
 			       "deleted rule: %s %s %s", rk->usr_name,
-			       rk->db_name, rk->address_range->string);
+			       rk->db_name, rk->address_range.string);
 		}
 
 		{

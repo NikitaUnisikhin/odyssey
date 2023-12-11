@@ -1855,7 +1855,7 @@ static inline int od_config_reader_watchdog(od_config_reader_t *reader,
 
 	rule->address_range.string = "all";
 	rule->address_range.string_len = strlen("all");
-	rule->rule->address_range. = 1;
+	rule->address_range.is_default = 1;
 
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
