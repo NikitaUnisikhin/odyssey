@@ -1810,7 +1810,6 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	address_range->string_len = strlen(address_range->string);
 	rule->address_range = *address_range;
 	free(address_str);
-	free(mask_str);
 
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
