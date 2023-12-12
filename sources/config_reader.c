@@ -1725,13 +1725,14 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 
 	/* address_range or default */
 	od_address_range_t address_range;
+	char *address_range_str = NULL;
 	od_address_range_init(&address_range);
 
 	char *address_str = NULL;
 	char *mask_str = NULL;
 
 	if (od_config_reader_is(reader, OD_PARSER_STRING)) {
-		if (!od_config_reader_string(reader, &address_range.string))
+		if (!od_config_reader_string(reader, &address_range_str))
 			return NOT_OK_RESPONSE;
 	} else {
 		bool is_default_keyword;
@@ -1745,13 +1746,13 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 			od_config_reader_keyword(reader, &od_config_keywords[OD_LDEFAULT]);
 
 		address_range.is_default = 1;
-		address_range.string = strdup("all");
-		if (address_range.string == NULL)
+		address_range_str = strdup("all");
+		if (address_range_str == NULL)
 			return NOT_OK_RESPONSE;
 	}
 
 	if (address_range.is_default == 0) {
-		address_str = strdup(address_range.string);
+		address_str = strdup(address_range_str);
 		mask_str = strchr(address_str, '/');
 		if (mask_str)
 			*mask_str++ = 0;
@@ -1806,9 +1807,13 @@ static int od_config_reader_route(od_config_reader_t *reader, char *db_name,
 	if (rule->db_name == NULL)
 		return NOT_OK_RESPONSE;
 
-	address_range.string_len = strlen(address_range.string);
+	address_range.string_len = strlen(address_range_str);
+	address_range.string = strdup(address_range_str);
+	if (address_range.string == NULL)
+		return NOT_OK_RESPONSE;
 	rule->address_range = address_range;
 	free(address_str);
+	free(address_range_str);
 
 	/* { */
 	if (!od_config_reader_symbol(reader, '{'))
