@@ -819,7 +819,7 @@ int od_pool_validate(od_logger_t *logger, od_rule_pool_t *pool, char *db_name,
 	/* pooling mode */
 	if (!pool->type) {
 		od_error(logger, "rules", NULL, NULL,
-			 "rule '%s.%s. %s': pooling mode is not set", db_name,
+			 "rule '%s.%s %s': pooling mode is not set", db_name,
 			 user_name, address_range_string);
 		return NOT_OK_RESPONSE;
 	}
