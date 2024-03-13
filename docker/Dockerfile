@@ -82,6 +82,8 @@ COPY ./docker/shell-test /shell-test
 COPY ./docker/tsa /tsa
 COPY ./docker/gorm /gorm
 
+RUN touch ./logs.txt
+
 COPY ./docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod a+x /usr/local/bin/entrypoint.sh
